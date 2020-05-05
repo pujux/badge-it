@@ -1,7 +1,5 @@
 const express = require('express'),
-	mongoose = require('mongoose'),
 	path = require('path')
-	User = require('./models')
 
 const app = express(),
 	config = require('dotenv').config()
@@ -10,8 +8,6 @@ if (config.error) {
 	console.warn('[ERROR]: cannot parse .env file')
 	process.exit(-1)
 }
-
-mongoose.connect(process.env.MONGO_URL || 'mongodb://localhost:27017/boiler-node', { useNewUrlParser: true, useUnifiedTopology: true})
 
 app.set('views', path.join(__dirname, '/views'));
 app.set('view engine', 'ejs');
