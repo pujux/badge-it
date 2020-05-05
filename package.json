@@ -4,7 +4,8 @@
   "description": "basic nodejs boilerplate with express",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon server.js",
+    "start": "node server.js",
+    "dev": "nodemon server.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },
