@@ -1,7 +1,7 @@
 {
-  "name": "gh-visitors",
+  "name": "git-badges",
   "version": "0.0.1",
-  "description": "A visitor counter for your GitHub Profile README",
+  "description": "Useful badges for GitHub",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -12,8 +12,11 @@
   "author": "puf17640",
   "license": "ISC",
   "dependencies": {
+    "@aero/centra": "1.0.4",
+    "badges": "4.17.0",
     "dotenv": "^8.2.0",
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "mongoose": "5.9.24"
   },
   "devDependencies": {
     "@aero/eslint-config": "^1.0.1",
@@ -22,10 +25,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/puf17640/gh-visitors.git"
+    "url": "git+https://github.com/puf17640/git-badges.git"
   },
   "bugs": {
-    "url": "https://github.com/puf17640/gh-visitors/issues"
+    "url": "https://github.com/puf17640/git-badges/issues"
   },
-  "homepage": "https://github.com/puf17640/gh-visitors#readme"
+  "homepage": "https://github.com/puf17640/git-badges#readme"
 }
