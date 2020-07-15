@@ -1,3 +1,3 @@
-# gh-visitors
+# git-badges
 
-A visitor counter for your GitHub Profile README
+### Useful badges for your GitHub Profile README 🎉
