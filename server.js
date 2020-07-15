@@ -1,5 +1,7 @@
 const express = require('express'),
-	path = require('path')
+	mongoose = require('mongoose'),
+	Entry = require('./models'),
+	request = require('@aero/centra')
 
 const app = express(),
 	config = require('dotenv').config()
@@ -9,24 +11,19 @@ if (config.error) {
 	process.exit(-1)
 }
 
-app.set('views', path.join(__dirname, '/views'));
-app.set('view engine', 'ejs');
+mongoose.connect(process.env.MONGO_URL || 'mongodb://localhost:27017/gh-visitors', { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false })
 
-app.use(require('morgan')('[REQUEST]: :remote-addr - :method :url :status :response-time ms - :res[content-length]'))
-app.use(require('cookie-parser')())
-app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
-app.use(require('express-session')({
-	secret: process.env.SESSION_SECRET || '12345',
-	cookie: { maxAge: parseInt(process.env.MAX_COOKIE_AGE) || 36e5 },
-	resave: false,
-	saveUninitialized: true,
-	httpOnly: true
-}))
-app.use(express.static(path.join(__dirname, '/public')))
-app.use(require('helmet')())
 
-app.use(require('./routes'))
+app.get('/visitors/:user/:repo', async (req, res, next) => {
+	const { user, repo } = req.params
+	const { counter } = await Entry.findOneAndUpdate({ key: `${user}/${repo}` }, { $inc: { counter: 1 } }, { upsert: true, new: true }).exec()
+	res.contentType('image/svg+xml')
+		.header('Cache-Control', 'no-cache,max-age=0')
+		.send(await request(`https://img.shields.io/badge/Visitors-${counter}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`).raw())
+})
+
+app.use((req, res, next) => res.redirect('https://github.com/puf17640/git-badges'))
 
 app.use((err, req, res, next) => res.status(err.status || 5e2).send({ error: err.message }))
 
