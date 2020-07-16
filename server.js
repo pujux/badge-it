@@ -15,12 +15,12 @@ mongoose.connect(process.env.MONGO_URL || 'mongodb://localhost:27017/gh-visitors
 
 app.use(express.urlencoded({ extended: false }))
 
-app.get('/visitors/:user/:repo', async (req, res, next) => {
+app.get('/visits/:user/:repo', async (req, res, next) => {
 	const { user, repo } = req.params
 	const { counter } = await Entry.findOneAndUpdate({ key: `${user}/${repo}` }, { $inc: { counter: 1 } }, { upsert: true, new: true }).exec()
 	res.contentType('image/svg+xml')
-		.header('Cache-Control', 'no-cache,max-age=0')
-		.send(await request(`https://img.shields.io/badge/Visitors-${counter}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`).raw())
+		.header('Cache-Control', 'no-cache,max-age=600')
+		.send(await request(`https://img.shields.io/badge/Visits-${counter}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`).raw())
 })
 
 app.use((req, res, next) => res.redirect('https://pufler.dev/git-badges/'))
