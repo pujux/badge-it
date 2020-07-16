@@ -23,7 +23,7 @@ app.get('/visitors/:user/:repo', async (req, res, next) => {
 		.send(await request(`https://img.shields.io/badge/Visitors-${counter}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`).raw())
 })
 
-app.use((req, res, next) => res.redirect('https://github.com/puf17640/git-badges'))
+app.use((req, res, next) => res.redirect('https://pufler.dev/git-badges/'))
 
 app.use((err, req, res, next) => res.status(err.status || 5e2).send({ error: err.message }))
 
