@@ -6,8 +6,8 @@ All endpoints support the query parameters that you can also use for [shields.io
 
 ## Currently available:
 
-- `https://badges.pufler.dev/visits/{username}/{repo}` Returns a badge containing the page hit counter for your repository 
+- [![Visits Badge](https://badges.pufler.dev/visits/puf17640/git-badges)](https://badges.pufler.dev) `https://badges.pufler.dev/visits/{username}/{repo}` 
 
-  [![Visits Badge](https://badges.pufler.dev/visits/puf17640/git-badges)](https://badges.pufler.dev)
-  
-- Got an idea for a badge? Create an [issue](https://github.com/puf17640/git-badges/issues/new) and I will reply soon!
+  Returns a badge containing the page hit counter for your repository 
+- Got an idea for a badge? 
+  Create an [issue](https://github.com/puf17640/git-badges/issues/new) and I will reply soon!
