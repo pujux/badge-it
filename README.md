@@ -2,7 +2,7 @@
 
 ### Useful badges for your GitHub Profile README 🎉
 
-All endpoints support the query parameters that you can also use for [shields.io](https://shields.io) badges.
+All endpoints support the parameters that you can also use for [shields.io](https://shields.io) badges, you can check out the documentation here [shields.io styles](https://shields.io/#styles).
 
 ## Currently available:
 
@@ -26,11 +26,6 @@ All endpoints support the query parameters that you can also use for [shields.io
   Returns a badge containing the number of your public repositories
   
   Markdown Code: <br>`[![Years Badge](https://badges.pufler.dev/repos/puf17640)](https://badges.pufler.dev)`
-  
-- [![Visits Badge](https://badges.pufler.dev/visits/puf17640/puf17640?style=flat-square&color=black&logo=github&label=visits)](https://badges.pufler.dev) <br>
-  `https://badges.pufler.dev/visits/puf17640/puf17640?style=flat-square&color=black&logo=github&label=visits`
-  
-  Returns a badge with customisations with [shields.io styles](https://shields.io/#styles) via query parameters.
   
 - Got an idea for a badge? 
 
