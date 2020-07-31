@@ -1,7 +1,8 @@
 const express = require('express'),
 	mongoose = require('mongoose'),
 	Entry = require('./models'),
-	request = require('@aero/centra')
+	request = require('@aero/centra'),
+	{ differenceInYears } = require('date-fns')
 
 const app = express(),
 	config = require('dotenv').config()
@@ -12,6 +13,11 @@ if (config.error) {
 }
 
 mongoose.connect(process.env.MONGO_URL || 'mongodb://localhost:27017/gh-visitors', { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false })
+
+const githubHeaders = {
+	Authorization: `Basic ${Buffer.from(`${process.env.GITHUB_ID}:${process.env.GITHUB_TOKEN}`, 'utf8').toString('base64')}`,
+	'User-Agent': 'pufler-dev'
+}
 
 app.use(express.urlencoded({ extended: false }))
 
@@ -25,19 +31,21 @@ app.get('/visits/:user/:repo', async (req, res) => {
 
 app.get('/years/:user', async (req, res) => {
 	const { user } = req.params
-
-	//* TODO: Figure out a way to maybe cache the result.
 	const { created_at: creation } = await request(`https://api.github.com/users/${user}`)
-		.header({
-			Authorization: `Basic ${Buffer.from(`${process.env.GITHUB_ID}:${process.env.GITHUB_TOKEN}`, 'utf8').toString('base64')}`,
-			'User-Agent': 'pufler-dev'
-		}).json();
-
-	const yearsAtGitHub = new Date().getFullYear() - new Date(creation).getFullYear();
-
+		.header(githubHeaders).json();
+	const yearsAtGitHub = differenceInYears(Date.now(), Date.parse(creation));
 	res.contentType('image/svg+xml')
 		.header('Cache-Control', 'no-cache,max-age=600')
 		.send(await request(`https://img.shields.io/badge/Years-${yearsAtGitHub}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`).raw())
+})
+
+app.get('/repos/:user', async (req, res) => {
+	const { user } = req.params
+	const { public_repos: repos } = await request(`https://api.github.com/users/${user}`)
+		.header(githubHeaders).json();
+	res.contentType('image/svg+xml')
+		.header('Cache-Control', 'no-cache,max-age=600')
+		.send(await request(`https://img.shields.io/badge/Repos-${repos}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`).raw())
 })
 
 app.use((_, res) => res.redirect('https://pufler.dev/git-badges/'))
