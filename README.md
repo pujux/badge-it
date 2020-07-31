@@ -30,3 +30,21 @@ All endpoints support the query parameters that you can also use for [shields.io
 - Got an idea for a badge? 
 
   Create an [issue](https://github.com/puf17640/git-badges/issues/new) and I will reply soon!
+
+## Installation:
+```
+git clone https://github.com/puf17640/git-badges
+
+cd git-badges
+
+npm install
+
+# Rename .env.example to .env
+
+# Run MongoDB as a Docker container 
+docker run -d --rm -p 27017:27017 mongo
+
+npm run start
+```
+
+The app should now be started on http://localhost:3000.
