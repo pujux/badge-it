@@ -1,6 +1,7 @@
 const express = require('express'),
 	mongoose = require('mongoose'),
 	Entry = require('./models'),
+	years = require('./years'),
 	request = require('@aero/centra')
 
 const app = express(),
@@ -21,6 +22,14 @@ app.get('/visits/:user/:repo', async (req, res, next) => {
 	res.contentType('image/svg+xml')
 		.header('Cache-Control', 'no-cache,max-age=600')
 		.send(await request(`https://img.shields.io/badge/Visits-${counter}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`).raw())
+})
+
+app.get('/years/:user', async (req, res, next) => {
+	const { user } = req.params
+	const yearsAtGitHub = await years(user, config);
+	res.contentType('image/svg+xml')
+		.header('Cache-Control', 'no-cache,max-age=600')
+		.send(await request(`https://img.shields.io/badge/Years-${yearsAtGitHub}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`).raw())
 })
 
 app.use((req, res, next) => res.redirect('https://pufler.dev/git-badges/'))
