@@ -2,7 +2,7 @@
 
 ### Useful badges for your GitHub Profile README 🎉
 
-All endpoints support the query parameters that you can also use for [shields.io](https://shields.io) badges.
+All endpoints support the parameters that you can also use for [shields.io](https://shields.io) badges, you can check out the documentation here [shields.io styles](https://shields.io/#styles).
 
 ## Currently available:
 
