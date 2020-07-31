@@ -25,7 +25,7 @@ All endpoints support the parameters that you can also use for [shields.io](http
   
   Returns a badge containing the number of your public repositories
   
-  Markdown Code: <br>`[![Years Badge](https://badges.pufler.dev/repos/puf17640)](https://badges.pufler.dev)`
+  Markdown Code: <br>`[![Repos Badge](https://badges.pufler.dev/repos/puf17640)](https://badges.pufler.dev)`
   
 - Got an idea for a badge? 
 
