@@ -25,13 +25,16 @@ app.get('/visits/:user/:repo', async (req, res) => {
 
 app.get('/years/:user', async (req, res) => {
 	const { user } = req.params
+
 	//* TODO: Figure out a way to maybe cache the result.
 	const { created_at: creation } = await request(`https://api.github.com/users/${user}`)
-		.header({ 
-			Authorization: `Basic ${Buffer.from(`${process.env.GITHUB_ID}:${process.env.GITHUB_TOKEN}`, 'utf8').toString('base64')}`, 
-			'User-Agent': 'pufler-dev' 
+		.header({
+			Authorization: `Basic ${Buffer.from(`${process.env.GITHUB_ID}:${process.env.GITHUB_TOKEN}`, 'utf8').toString('base64')}`,
+			'User-Agent': 'pufler-dev'
 		}).json();
+
 	const yearsAtGitHub = new Date().getFullYear() - new Date(creation).getFullYear();
+
 	res.contentType('image/svg+xml')
 		.header('Cache-Control', 'no-cache,max-age=600')
 		.send(await request(`https://img.shields.io/badge/Years-${yearsAtGitHub}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`).raw())
