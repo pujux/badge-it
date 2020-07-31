@@ -14,6 +14,7 @@ module.exports = async (user, { parsed: { GITHUB_ID: GITHUB_ID, GITHUB_TOKEN: GI
 	const GITHUB_BASE = btoa(`${GITHUB_ID}:${GITHUB_TOKEN}`);
 	const GITHUB_API = 'https://api.github.com';
 
+	//* TODO: Figure out a way to maybe cache the result.
 	const { created_at: creation } = await request(`${GITHUB_API}/users/${user}`, 'GET')
 		.header({
 			Authorization: `Basic ${GITHUB_BASE}`,
