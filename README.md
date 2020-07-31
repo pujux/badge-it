@@ -19,6 +19,13 @@ All endpoints support the query parameters that you can also use for [shields.io
   Returns a badge containing the number of years you have been a member
   
   Markdown Code: <br>`[![Years Badge](https://badges.pufler.dev/years/puf17640)](https://badges.pufler.dev)`
+
+- [![Repos Badge](https://badges.pufler.dev/repos/puf17640)](https://badges.pufler.dev) <br>
+  `https://badges.pufler.dev/repos/{username}`
+  
+  Returns a badge containing the number of your public repositories
+  
+  Markdown Code: <br>`[![Years Badge](https://badges.pufler.dev/repos/puf17640)](https://badges.pufler.dev)`
   
 - Got an idea for a badge? 
 
