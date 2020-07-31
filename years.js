@@ -1,4 +1,3 @@
-const { differenceInYears } = require('date-fns');
 const request = require('@aero/centra');
 
 /**
@@ -21,7 +20,7 @@ module.exports = async (user, { parsed: { GITHUB_ID: GITHUB_ID, GITHUB_TOKEN: GI
 			'User-Agent': 'pufler-dev'
 		}).json();
 
-	return differenceInYears(new Date(), new Date(creation));
+	return new Date().getFullYear()- new Date(creation).getFullYear();
 }
 
 /**
