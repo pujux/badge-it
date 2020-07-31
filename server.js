@@ -16,7 +16,7 @@ mongoose.connect(process.env.MONGO_URL || 'mongodb://localhost:27017/gh-visitors
 
 app.use(express.urlencoded({ extended: false }))
 
-app.get('/visits/:user/:repo', async (req, res, next) => {
+app.get('/visits/:user/:repo', async (req, res) => {
 	const { user, repo } = req.params
 	const { counter } = await Entry.findOneAndUpdate({ key: `${user}/${repo}` }, { $inc: { counter: 1 } }, { upsert: true, new: true }).exec()
 	res.contentType('image/svg+xml')
@@ -24,7 +24,7 @@ app.get('/visits/:user/:repo', async (req, res, next) => {
 		.send(await request(`https://img.shields.io/badge/Visits-${counter}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`).raw())
 })
 
-app.get('/years/:user', async (req, res, next) => {
+app.get('/years/:user', async (req, res) => {
 	const { user } = req.params
 	const yearsAtGitHub = await years(user, config);
 	res.contentType('image/svg+xml')
@@ -32,8 +32,8 @@ app.get('/years/:user', async (req, res, next) => {
 		.send(await request(`https://img.shields.io/badge/Years-${yearsAtGitHub}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`).raw())
 })
 
-app.use((req, res, next) => res.redirect('https://pufler.dev/git-badges/'))
+app.use((req, res) => res.redirect('https://pufler.dev/git-badges/'))
 
-app.use((err, req, res, next) => res.status(err.status || 5e2).send({ error: err.message }))
+app.use((err, req, res) => res.status(err.status || 5e2).send({ error: err.message }))
 
 app.listen(process.env.PORT, () => console.log(`[INFO]: listening on port ${process.env.PORT}`))
