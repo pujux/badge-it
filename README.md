@@ -26,10 +26,6 @@ All endpoints support the parameters that you can also use for [shields.io](http
   Returns a badge containing the number of your public repositories
   
   Markdown Code: <br>`[![Repos Badge](https://badges.pufler.dev/repos/puf17640)](https://badges.pufler.dev)`
-  
-- Got an idea for a badge? 
-
-  Create an [issue](https://github.com/puf17640/git-badges/issues/new) and I will reply soon!
 
 ## Installation:
 ```
@@ -49,3 +45,7 @@ npm run start
 ```
 
 The app should now be started on http://localhost:3000.
+
+### Got an idea for a badge? 😀
+
+Create an [issue](https://github.com/puf17640/git-badges/issues/new) and I will reply soon!
