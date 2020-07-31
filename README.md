@@ -33,15 +33,18 @@ All endpoints support the query parameters that you can also use for [shields.io
 
 ## Installation:
 ```
+git clone https://github.com/puf17640/git-badges
+
+cd git-badges
+
 npm install
 
-echo 'PORT=8080' >> .env
-echo 'MONGO_URL=mongodb://localhost:27017/gh-visitors' >> .env
+# Rename .env.example to .env
 
-# Running MongoDB as a Docker container 
+# Run MongoDB as a Docker container 
 docker run -d --rm -p 27017:27017 mongo
 
 npm run start
 ```
 
-Now you can visit http://localhost:8080/visits/username/repo to view your badge.
+The app should now be started on http://localhost:3000.
