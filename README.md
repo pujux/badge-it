@@ -1,10 +1,10 @@
-# git-badges
+# git-badges 🎉
 
-### Useful badges for your GitHub Profile README 🎉
+###### Useful badges for your GitHub README
 
 All endpoints support the parameters that you can also use for [shields.io](https://shields.io) badges, you can check out the documentation here [shields.io styles](https://shields.io/#styles).
 
-## Currently available:
+## Currently available badges 🔥
 
 - [![Visits Badge](https://badges.pufler.dev/visits/puf17640/git-badges)](https://badges.pufler.dev/visits/puf17640/git-badges) <br>
   `https://badges.pufler.dev/visits/{username}/{repo}`
@@ -27,7 +27,7 @@ All endpoints support the parameters that you can also use for [shields.io](http
   
   Markdown Code: <br>`[![Repos Badge](https://badges.pufler.dev/repos/puf17640)](https://badges.pufler.dev)`
 
-## Installation:
+## Contribute to git-badges 😎
 ```
 git clone https://github.com/puf17640/git-badges
 
@@ -46,6 +46,6 @@ npm run start
 
 The app should now be started on http://localhost:3000.
 
-### Got an idea for a badge? 😀
+## Got an idea for a badge? 😀
 
 Create an [issue](https://github.com/puf17640/git-badges/issues/new) and I will reply soon!
