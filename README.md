@@ -6,21 +6,21 @@ All endpoints support the parameters that you can also use for [shields.io](http
 
 ## Currently available:
 
-- [![Visits Badge](https://badges.pufler.dev/visits/puf17640/git-badges)](https://badges.pufler.dev) <br>
+- [![Visits Badge](https://badges.pufler.dev/visits/puf17640/git-badges)](https://badges.pufler.dev/visits/puf17640/git-badges) <br>
   `https://badges.pufler.dev/visits/{username}/{repo}`
   
   Returns a badge containing the page hit counter for your repository
   
   Markdown Code: <br>`[![Visits Badge](https://badges.pufler.dev/visits/puf17640/git-badges)](https://badges.pufler.dev)`
 
-- [![Visits Badge](https://badges.pufler.dev/years/puf17640)](https://badges.pufler.dev) <br>
+- [![Visits Badge](https://badges.pufler.dev/years/puf17640)](https://badges.pufler.dev/years/puf17640) <br>
   `https://badges.pufler.dev/years/{username}`
   
   Returns a badge containing the number of years you have been a member
   
   Markdown Code: <br>`[![Years Badge](https://badges.pufler.dev/years/puf17640)](https://badges.pufler.dev)`
 
-- [![Repos Badge](https://badges.pufler.dev/repos/puf17640)](https://badges.pufler.dev) <br>
+- [![Repos Badge](https://badges.pufler.dev/repos/puf17640)](https://badges.pufler.dev/repos/puf17640) <br>
   `https://badges.pufler.dev/repos/{username}`
   
   Returns a badge containing the number of your public repositories
