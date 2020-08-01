@@ -45,6 +45,10 @@ Returns a badge containing the number of your public repositories
 
 `[![Repos Badge](https://badges.pufler.dev/repos/puf17640)](https://badges.pufler.dev)`
 
+## Got an idea for a badge? 😀
+
+Create an [issue](https://github.com/puf17640/git-badges/issues/new) and I will reply soon!
+
 ## Contribute to git-badges 😎
 
 ##### Clone and install
@@ -81,7 +85,3 @@ npm run start
 ```
 
 Your local version of git-badges should now be running on [localhost:3030](http://localhost:3000).
-
-## Got an idea for a badge? 😀
-
-Create an [issue](https://github.com/puf17640/git-badges/issues/new) and I will reply soon!
