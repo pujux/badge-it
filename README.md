@@ -10,10 +10,11 @@ All endpoints support the parameters that you can also use for [shields.io](http
 
 Returns a badge containing the page hit counter for your repository
 
-###### Endpoint
+###### Endpoint {#visits-endpoint}
+
 `https://badges.pufler.dev/visits/{username}/{repo}`
 
-###### Markdown
+###### Markdown {#visits-markdown}
 
 `[![Visits Badge](https://badges.pufler.dev/visits/puf17640/git-badges)](https://badges.pufler.dev)`
 
@@ -23,11 +24,11 @@ Returns a badge containing the page hit counter for your repository
   
 Returns a badge containing the number of years you have been a member
 
-###### Endpoint
+###### Endpoint {#years-endpoint}
 
 `https://badges.pufler.dev/years/{username}`
 
-###### Markdown 
+###### Markdown {#years-markdown}
 
 `[![Years Badge](https://badges.pufler.dev/years/puf17640)](https://badges.pufler.dev)`
 
@@ -37,15 +38,16 @@ Returns a badge containing the number of years you have been a member
   
 Returns a badge containing the number of your public repositories
 
-###### Endpoint
+###### Endpoint {#repos-endpoint}
 
 `https://badges.pufler.dev/repos/{username}`
 
-###### Markdown
+###### Markdown {#repos-markdown}
 
 `[![Repos Badge](https://badges.pufler.dev/repos/puf17640)](https://badges.pufler.dev)`
 
 ## Contribute to git-badges 😎
+
 ```
 git clone https://github.com/puf17640/git-badges
 
