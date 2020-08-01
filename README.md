@@ -51,36 +51,19 @@ Create an [issue](https://github.com/puf17640/git-badges/issues/new) and I will 
 
 ## Contribute to git-badges 😎
 
-##### Clone and install
-
 ```bash
 git clone https://github.com/puf17640/git-badges
 
 cd git-badges
+
 npm install
-```
 
-##### Copy environment file
+# Rename .env.example to .env
+# Replace 'github_username' and 'github_token' with your GitHub username and a personal token (no additional permissions required)
 
-```bash
-cp .env.example .env
-```
-
-###### Copy `.env.example` to a new file named `.env`
-
-Replace `github_username` and `github_token` with your GitHub username and a personal token *(no additional permissions required)*
-
-##### Mongo
-
-Connect the app to a Mongo database, here we're using docker.
-
-```bash
+# Run MongoDB as a Docker container 
 docker run -d --rm -p 27017:27017 mongo
-```
 
-##### Run
-
-```bash
 npm run start
 ```
 
