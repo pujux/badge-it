@@ -46,21 +46,42 @@ Returns a badge containing the number of your public repositories
 `[![Repos Badge](https://badges.pufler.dev/repos/puf17640)](https://badges.pufler.dev)`
 
 ## Contribute to git-badges 😎
-```
+
+##### Clone and install
+
+```bash
 git clone https://github.com/puf17640/git-badges
 
 cd git-badges
-
 npm install
+```
 
-# Rename .env.example to .env
-# Replace 'github_username' and 'github_token' with your GitHub username and a personal token (no additional permissions required)
+##### Copy environment file
 
-# Run MongoDB as a Docker container 
+```bash
+cp .env.example .env
+```
+
+###### Copy `.env.example` to a new file named `.env`
+
+Replace `github_username` and `github_token` with your GitHub username and a personal token *(no additional permissions required)*
+
+##### Mongo
+
+Connect the app to a Mongo database, here we're using docker.
+
+```bash
 docker run -d --rm -p 27017:27017 mongo
+```
 
+##### Run
+
+```bash
 npm run start
 ```
+
+
+##### Run
 
 The app should now be started on http://localhost:3000.
 
