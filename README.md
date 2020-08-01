@@ -61,7 +61,8 @@ cd git-badges
 npm install
 
 # Rename .env.example to .env
-# Replace 'github_username' and 'github_token' with your GitHub username and a personal token (no additional permissions required)
+# Replace 'github_username' and 'github_token' with your GitHub username,
+# and a personal token (no additional permissions required)
 
 # Run MongoDB as a Docker container 
 docker run -d --rm -p 27017:27017 mongo
