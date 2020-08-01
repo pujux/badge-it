@@ -51,6 +51,8 @@ Create an [issue](https://github.com/puf17640/git-badges/issues/new) and I will 
 
 ## Contribute to git-badges 😎
 
+Wanna join us in contributing to git-badges?
+
 ```bash
 git clone https://github.com/puf17640/git-badges
 
