@@ -70,4 +70,4 @@ docker run -d --rm -p 27017:27017 mongo
 npm run start
 ```
 
-Your local version of git-badges should now be running on [localhost:3030](http://localhost:3000).
+Your local version of git-badges should now be running on [localhost:3000](http://localhost:3000).
