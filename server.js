@@ -20,10 +20,15 @@ const githubHeaders = {
 }
 
 app.use(express.urlencoded({ extended: false }))
+app.set('trust proxy', true)
 
 app.get('/visits/:user/:repo', async (req, res) => {
 	const { user, repo } = req.params
-	const { counter } = await Entry.findOneAndUpdate({ key: `${user}/${repo}` }, { $inc: { counter: 1 } }, { upsert: true, new: true }).exec()
+	const response = await request(`https://api.github.com/repos/${user}/${repo}`)
+		.header(githubHeaders).json()
+	if (!response.id) return res.status(404).send(response)
+	const flag = !req.ip.match(new RegExp(process.env.IPWHITELIST_REGEX))
+	const { counter } = await Entry.findOneAndUpdate({ key: `${user}/${repo}` }, { $inc: { counter: flag ? 0 : 1 } }, { upsert: true, new: true }).exec()
 	res.contentType('image/svg+xml')
 		.header('Cache-Control', 'no-cache,max-age=600')
 		.send(await request(`https://img.shields.io/badge/Visits-${counter}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`).raw())
@@ -31,9 +36,10 @@ app.get('/visits/:user/:repo', async (req, res) => {
 
 app.get('/years/:user', async (req, res) => {
 	const { user } = req.params
-	const { created_at: creation } = await request(`https://api.github.com/users/${user}`)
-		.header(githubHeaders).json();
-	const yearsAtGitHub = differenceInYears(Date.now(), Date.parse(creation));
+	const response = await request(`https://api.github.com/users/${user}`)
+		.header(githubHeaders).json()
+	if (!response.created_at) return res.status(404).send(response)
+	const yearsAtGitHub = differenceInYears(Date.now(), Date.parse(response.created_at))
 	res.contentType('image/svg+xml')
 		.header('Cache-Control', 'no-cache,max-age=600')
 		.send(await request(`https://img.shields.io/badge/Years-${yearsAtGitHub}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`).raw())
@@ -41,11 +47,12 @@ app.get('/years/:user', async (req, res) => {
 
 app.get('/repos/:user', async (req, res) => {
 	const { user } = req.params
-	const { public_repos: repos } = await request(`https://api.github.com/users/${user}`)
-		.header(githubHeaders).json();
+	const response = await request(`https://api.github.com/users/${user}`)
+		.header(githubHeaders).json()
+	if (!response.public_repos) return res.status(404).send(response)
 	res.contentType('image/svg+xml')
 		.header('Cache-Control', 'no-cache,max-age=600')
-		.send(await request(`https://img.shields.io/badge/Repos-${repos}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`).raw())
+		.send(await request(`https://img.shields.io/badge/Repos-${response.public_repos}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`).raw())
 })
 
 app.use((_, res) => res.redirect('https://pufler.dev/git-badges/'))
