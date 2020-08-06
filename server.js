@@ -31,7 +31,7 @@ app.get('/visits/:user/:repo', async (req, res) => {
 	const { counter } = await Entry.findOneAndUpdate({ key: `${user}/${repo}` }, { $inc: { counter: flag } }, { upsert: true, new: true }).exec()
 	if (flag) console.log(`[${user}/${repo}] => ${counter}`)
 	res.contentType('image/svg+xml')
-		.header('Cache-Control', 'no-cache,max-age=1')
+		.header('Cache-Control', 'no-cache,max-age=60')
 		.send(await request(`https://img.shields.io/badge/Visits-${counter}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`).raw())
 })
 
@@ -42,7 +42,7 @@ app.get('/years/:user', async (req, res) => {
 	if (!response.created_at) return res.status(404).send(response)
 	const yearsAtGitHub = differenceInYears(Date.now(), Date.parse(response.created_at))
 	res.contentType('image/svg+xml')
-		.header('Cache-Control', 'no-cache,max-age=1')
+		.header('Cache-Control', 'no-cache,max-age=60')
 		.send(await request(`https://img.shields.io/badge/Years-${yearsAtGitHub}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`).raw())
 })
 
@@ -52,7 +52,7 @@ app.get('/repos/:user', async (req, res) => {
 		.header(githubHeaders).json()
 	if (!response.public_repos) return res.status(404).send(response)
 	res.contentType('image/svg+xml')
-		.header('Cache-Control', 'no-cache,max-age=1')
+		.header('Cache-Control', 'no-cache,max-age=60')
 		.send(await request(`https://img.shields.io/badge/Repos-${response.public_repos}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`).raw())
 })
 
