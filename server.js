@@ -27,10 +27,11 @@ app.get('/visits/:user/:repo', async (req, res) => {
 	const response = await request(`https://api.github.com/repos/${user}/${repo}`)
 		.header(githubHeaders).json()
 	if (!response.id) return res.status(404).send(response)
-	const flag = !req.ip.match(new RegExp(process.env.IPWHITELIST_REGEX))
-	const { counter } = await Entry.findOneAndUpdate({ key: `${user}/${repo}` }, { $inc: { counter: flag ? 0 : 1 } }, { upsert: true, new: true }).exec()
+	const flag = req.ip.startsWith(process.env.IPWHITELIST) ? 1 : 0
+	const { counter } = await Entry.findOneAndUpdate({ key: `${user}/${repo}` }, { $inc: { counter: flag } }, { upsert: true, new: true }).exec()
+	if (flag) console.log(`[${user}/${repo}] => ${counter}`)
 	res.contentType('image/svg+xml')
-		.header('Cache-Control', 'no-cache,max-age=600')
+		.header('Cache-Control', 'no-cache,max-age=1')
 		.send(await request(`https://img.shields.io/badge/Visits-${counter}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`).raw())
 })
 
@@ -41,7 +42,7 @@ app.get('/years/:user', async (req, res) => {
 	if (!response.created_at) return res.status(404).send(response)
 	const yearsAtGitHub = differenceInYears(Date.now(), Date.parse(response.created_at))
 	res.contentType('image/svg+xml')
-		.header('Cache-Control', 'no-cache,max-age=600')
+		.header('Cache-Control', 'no-cache,max-age=1')
 		.send(await request(`https://img.shields.io/badge/Years-${yearsAtGitHub}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`).raw())
 })
 
@@ -51,7 +52,7 @@ app.get('/repos/:user', async (req, res) => {
 		.header(githubHeaders).json()
 	if (!response.public_repos) return res.status(404).send(response)
 	res.contentType('image/svg+xml')
-		.header('Cache-Control', 'no-cache,max-age=600')
+		.header('Cache-Control', 'no-cache,max-age=1')
 		.send(await request(`https://img.shields.io/badge/Repos-${response.public_repos}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`).raw())
 })
 
