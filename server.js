@@ -58,21 +58,12 @@ app.get('/repos/:user', async (req, res) => {
 
 app.get('/gists/:user', async (req, res) => {
 	const { user } = req.params;
-
-	const response = await request(
-		`https://api.github.com/users/${user}/gists`
-	).header(githubHeaders).json();
-
-	if (response.length === 0)
-		return res.status(404).send(response);
-
-	const badge = await request(
-		`https://img.shields.io/badge/Gists-${response.length}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`)
-		.raw();
-
+	const response = await request(`https://api.github.com/users/${user}/gists`)
+		.header(githubHeaders).json();
+	if (!Array.isArray(response) || response.length === 0) return res.status(404).send(response);
 	res.contentType('image/svg+xml')
 		.header('Cache-Control', 'no-age', 'max-age=600')
-		.send(badge);
+		.send(await request(`https://img.shields.io/badge/Gists-${response.length}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`).raw());
 })
 
 app.use((_, res) => res.redirect('https://pufler.dev/git-badges/'))
