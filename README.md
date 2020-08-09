@@ -45,6 +45,20 @@ Returns a badge containing the number of your public repositories
 
 `[![Repos Badge](https://badges.pufler.dev/repos/puf17640)](https://badges.pufler.dev)`
 
+---
+
+[![Gists Badge](https://badges.pufler.dev/gists/puf17640)](https://badges.pufler.dev/gists/puf17640)
+  
+Returns a badge containing the number of your public gists
+
+###### Endpoint
+
+`https://badges.pufler.dev/gists/{username}`
+
+###### Markdown
+
+`[![Repos Badge](https://badges.pufler.dev/gists/puf17640)](https://badges.pufler.dev)`
+
 ## Got an idea for a badge? 😀
 
 Create an [issue](https://github.com/puf17640/git-badges/issues/new) and I will reply soon!
