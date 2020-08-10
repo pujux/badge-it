@@ -2,7 +2,8 @@ const express = require('express'),
 	mongoose = require('mongoose'),
 	Entry = require('./models'),
 	request = require('@aero/centra'),
-	{ differenceInYears } = require('date-fns')
+	{ differenceInYears } = require('date-fns'),
+	cron = require('cron')
 
 const app = express(),
 	config = require('dotenv').config()
@@ -71,3 +72,9 @@ app.use((_, res) => res.redirect('https://pufler.dev/git-badges/'))
 app.use((err, _, res) => res.status(err.status || 5e2).send({ error: err.message }))
 
 app.listen(process.env.PORT, () => console.log(`[INFO]: listening on port ${process.env.PORT}`))
+
+cron.job('* */30 * * *', () => {
+	const { resources } = await request(`https://api.github.com/rate_limit`)
+		.header(githubHeaders).json();
+	console.log(`[Rate Limit]: ${resources.core.remaining} / ${resources.core.limit} (${new Date(resources.core.reset*1e3).toLocaleString()})`)
+})
