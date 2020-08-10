@@ -73,7 +73,7 @@ app.use((err, _, res) => res.status(err.status || 5e2).send({ error: err.message
 
 app.listen(process.env.PORT, () => console.log(`[INFO]: listening on port ${process.env.PORT}`))
 
-cron.job('* */30 * * *', () => {
+cron.job('*/30 * * * *', () => {
 	const { resources } = await request(`https://api.github.com/rate_limit`)
 		.header(githubHeaders).json();
 	console.log(`[Rate Limit]: ${resources.core.remaining} / ${resources.core.limit} (${new Date(resources.core.reset*1e3).toLocaleString()})`)
