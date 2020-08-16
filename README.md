@@ -65,6 +65,9 @@ Create an [issue](https://github.com/puf17640/git-badges/issues/new) and I will 
 
 ## Contribute to git-badges 😎
 
+[![Contributors to git badges](https://contributors.thinkverse.vercel.app/api/contributors?org=puf17640&repo=git-badges&bots=false)](https://github.com/puf17640/git-badges/graphs/contributors)
+
+
 Wanna join us in contributing to git-badges?
 
 ```bash
