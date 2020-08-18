@@ -10,8 +10,7 @@ const app = express(),
 	config = require('dotenv').config()
 
 if (config.error) {
-	console.warn('[ERROR]: cannot parse .env file')
-	process.exit(-1)
+	console.warn('[WARNING]: cannot parse .env file, falling back to systems ones')
 }
 
 mongoose.connect(process.env.MONGO_URL || 'mongodb://localhost:27017/gh-visitors', { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false })

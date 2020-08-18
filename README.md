@@ -59,6 +59,10 @@ Returns a badge containing the number of your public gists
 
 `[![Repos Badge](https://badges.pufler.dev/gists/puf17640)](https://badges.pufler.dev)`
 
+## Self-deployment
+
+If you want to self-deploy `git-badges` using Docker you can just have a look at the example `docker-compose.yml` file inside the repository.
+
 ## Got an idea for a badge? 😀
 
 Create an [issue](https://github.com/puf17640/git-badges/issues/new) and I will reply soon!
