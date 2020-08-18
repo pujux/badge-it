@@ -1,0 +1,24 @@
+version: "3"
+
+services:
+  git-badges-db:
+    image: mongo
+    container_name: git-badges-db
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: git-badges
+      MONGO_INITDB_ROOT_PASSWORD: chooseASafePassword
+    volumes:
+      - ./db:/data/db
+  git-badges:
+    image: ksebrt/git-badges
+    container_name: git-badges
+    restart: always
+    ports:
+      - 3000:3000
+    environment:
+      NODE_ENV=development
+      PORT: 3000
+      MONGO_URL: mongodb://git-badges:chooseASafePassword@git-badges-db/admin
+      GITHUB_ID: yourGitHubUsername
+      GITHUB_TOKEN: yourGitHubToken
