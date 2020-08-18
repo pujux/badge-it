@@ -90,7 +90,7 @@ app.get('/created/:user/:repo', async (req, res, next) => {
 		.send(await request(`https://img.shields.io/badge/Created-${moment(response.created_at).fromNow()}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`).raw());
 })
 
-app.use((_, res) => res.redirect('https://badges.pufler.dev/'))
+app.use((_, res) => res.redirect('https://pufler.dev/git-badges'))
 
 app.listen(process.env.PORT, () => console.log(`[Info]: listening on port ${process.env.PORT}`))
 
