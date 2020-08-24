@@ -104,7 +104,7 @@ app.get('/created/:user/:repo', async (req, res) => {
 app.get('/commits/:periodicity/:user', async (req, res) => {
 	const { periodicity, user } = req.params;
 	if (!Object.keys(periodicities).includes(periodicity)) return res.send(`Please use one of the following periodicities: [${Object.keys(periodicities).join(', ')}]`)
-	const response = await request(`https://api.github.com/search/commits?q=author:${user}+author-date%3A>=${getDateByPeriodicity(periodicity)}`)
+	const response = await request(`https://api.github.com/search/commits?q=author:${user}+author-date%3A>=${periodicity === 'all' ? '1970-01-01' : moment().startOf(periodicities[periodicity]).format('YYYY-MM-DD')}`)
 		.header(githubHeaders).json();
 	if (!response.total_count) return createError(res, response.message)
 	return res.contentType('image/svg+xml')
