@@ -57,7 +57,49 @@ Returns a badge containing the number of your public gists
 
 ###### Markdown
 
-`[![Repos Badge](https://badges.pufler.dev/gists/puf17640)](https://badges.pufler.dev)`
+`[![Gists Badge](https://badges.pufler.dev/gists/puf17640)](https://badges.pufler.dev)`
+
+---
+
+[![Updated Badge](https://badges.pufler.dev/updated/puf17640/puf17640)](https://badges.pufler.dev/updated/puf17640/puf17640)
+  
+Returns a badge that shows when the repository was last updated
+
+###### Endpoint
+
+`https://badges.pufler.dev/updated/{username}/{repo}`
+
+###### Markdown
+
+`[![Updated Badge](https://badges.pufler.dev/updated/puf17640/puf17640)](https://badges.pufler.dev)`
+
+---
+
+[![Created Badge](https://badges.pufler.dev/created/puf17640/puf17640)](https://badges.pufler.dev/created/puf17640/puf17640)
+  
+Returns a badge that shows when the repository was created
+
+###### Endpoint
+
+`https://badges.pufler.dev/created/{username}/{repo}`
+
+###### Markdown
+
+`[![Created Badge](https://badges.pufler.dev/created/puf17640/puf17640)](https://badges.pufler.dev)`
+
+---
+
+[![Commits Badge](https://badges.pufler.dev/commits/monthly/puf17640)](https://badges.pufler.dev/commits/monthly/puf17640)
+  
+Returns a badge that shows the number of commits you have published in a specified periodicity (yearly, monthly, weekly, daily or all)
+
+###### Endpoint
+
+`https://badges.pufler.dev/commits/{periodicity}/{username}`
+
+###### Markdown
+
+`[![Commits Badge](https://badges.pufler.dev/commits/monthly/puf17640)](https://badges.pufler.dev)`
 
 ## Self-deployment
 
