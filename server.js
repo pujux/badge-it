@@ -32,8 +32,6 @@ const periodicities = {
 const createError = (res, error) => res.status(5e2).send(
 	{ message: 'An error occured while processing your request, please create an issue on https://github.com/puf17640/git-badges/issues and give as much detail as you can. Thanks!', error });
 
-const getDateByPeriodicity = (periodicity) => periodicity === 'all' ? '1970-01-01' : moment().subtract(1, periodicities[periodicity]).format('YYYY-MM-DD')
-
 app.use(express.urlencoded({ extended: false }))
 app.set('trust proxy', true)
 
@@ -67,7 +65,6 @@ app.get('/repos/:user', async (req, res) => {
 		.header(githubHeaders).json()
 	if (!response.public_repos) return createError(res, response.message)
 	return res.contentType('image/svg+xml')
-		.header('Cache-Control', 'no-cache,max-age=600')
 		.send(await request(`https://img.shields.io/badge/Repos-${response.public_repos}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`).raw())
 })
 
@@ -77,7 +74,6 @@ app.get('/gists/:user', async (req, res) => {
 		.header(githubHeaders).json();
 	if (!Array.isArray(response) || response.length === 0) return createError(res, response.message)
 	return res.contentType('image/svg+xml')
-		.header('Cache-Control', 'no-age', 'max-age=600')
 		.send(await request(`https://img.shields.io/badge/Gists-${response.length}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`).raw());
 })
 
@@ -87,7 +83,6 @@ app.get('/updated/:user/:repo', async (req, res) => {
 		.header(githubHeaders).json()
 	if (!response.id) return createError(res, response.message)
 	return res.contentType('image/svg+xml')
-		.header('Cache-Control', 'no-age', 'max-age=600')
 		.send(await request(`https://img.shields.io/badge/Updated-${moment(response.updated_at).fromNow()}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`).raw());
 })
 
@@ -97,7 +92,6 @@ app.get('/created/:user/:repo', async (req, res) => {
 		.header(githubHeaders).json()
 	if (!response.id) return createError(res, response.message)
 	return res.contentType('image/svg+xml')
-		.header('Cache-Control', 'no-age', 'max-age=600')
 		.send(await request(`https://img.shields.io/badge/Created-${moment(response.created_at).fromNow()}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`).raw());
 })
 
@@ -108,7 +102,6 @@ app.get('/commits/:periodicity/:user', async (req, res) => {
 		.header(githubHeaders).json();
 	if (!response.total_count) return createError(res, response.message)
 	return res.contentType('image/svg+xml')
-		.header('Cache-Control', 'no-age', 'max-age=600')
 		.send(await request(`https://img.shields.io/badge/${periodicity === 'all'
 			? 'All commits' : periodicity === 'daily'
 				? 'Commits%20today' : `Commits%20this%20${periodicities[periodicity]}`}-${response.total_count}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`).raw());
