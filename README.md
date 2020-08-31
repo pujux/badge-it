@@ -61,7 +61,7 @@ Returns a badge containing the number of your public gists
 
 ---
 
-[![Updated Badge](https://badges.pufler.dev/updated/puf17640/puf17640)](https://badges.pufler.dev/updated/puf17640/puf17640)
+[![Updated Badge](https://badges.pufler.dev/updated/puf17640/git-badges)](https://badges.pufler.dev/updated/puf17640/git-badges)
   
 Returns a badge that shows when the repository was last updated
 
@@ -71,11 +71,11 @@ Returns a badge that shows when the repository was last updated
 
 ###### Markdown
 
-`[![Updated Badge](https://badges.pufler.dev/updated/puf17640/puf17640)](https://badges.pufler.dev)`
+`[![Updated Badge](https://badges.pufler.dev/updated/puf17640/git-badges)](https://badges.pufler.dev)`
 
 ---
 
-[![Created Badge](https://badges.pufler.dev/created/puf17640/puf17640)](https://badges.pufler.dev/created/puf17640/puf17640)
+[![Created Badge](https://badges.pufler.dev/created/puf17640/git-badges)](https://badges.pufler.dev/created/puf17640/git-badges)
   
 Returns a badge that shows when the repository was created
 
@@ -85,7 +85,7 @@ Returns a badge that shows when the repository was created
 
 ###### Markdown
 
-`[![Created Badge](https://badges.pufler.dev/created/puf17640/puf17640)](https://badges.pufler.dev)`
+`[![Created Badge](https://badges.pufler.dev/created/puf17640/git-badges)](https://badges.pufler.dev)`
 
 ---
 
