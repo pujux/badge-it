@@ -101,6 +101,20 @@ Returns a badge that shows the number of commits you have published in a specifi
 
 `[![Commits Badge](https://badges.pufler.dev/commits/monthly/puf17640)](https://badges.pufler.dev)`
 
+---
+
+[![Contributors Display](https://badges.pufler.dev/contributors/puf17640/git-badges)](https://badges.pufler.dev/contributors/puf17640/git-badges)
+  
+Returns an SVG that displays all contributors of the specified repository
+
+###### Endpoint
+
+`https://badges.pufler.dev/contributors/{user}/{repo}`
+
+###### Markdown
+
+`[![Commits Badge](https://badges.pufler.dev/contributors/puf17640/git-badges)](https://badges.pufler.dev)`
+
 ## Self-deployment
 
 If you want to self-deploy `git-badges` using Docker you can just have a look at the example `docker-compose.yml` file inside the repository.
