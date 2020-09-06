@@ -142,7 +142,7 @@ app.get('/contributors/:user/:repo', async (req, res) => {
 		.header(githubHeaders).json();
 	if (!Array.isArray(response)) return createError(res, response.message);
 	return res.contentType('image/svg+xml').send(`
-		<svg role="img" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> 
+		<svg width="${((response.length - 1) % perRow) * (size + padding) + size}" height="${Math.floor((response.length - 1) / perRow) * (size + padding) + size}" role="img" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> 
 			<defs>
 				${response.map((_c, i) =>
 		`<clipPath id="c-${i}">
