@@ -125,9 +125,9 @@ If you want to self-deploy `git-badges` using Docker you can just have a look at
 
 Create an [issue](https://github.com/puf17640/git-badges/issues/new) and I will reply soon!
 
-## Contribute to git-badges 😎
+## Check out the team 😎
 
-[![Contributors to git badges](https://contributors.thinkverse.vercel.app/api/contributors?org=puf17640&repo=git-badges&bots=false)](https://github.com/puf17640/git-badges/graphs/contributors)
+[![Contributors](https://badges.pufler.dev/contributors/puf17640/git-badges?bots=false)](https://badges.pufler.dev)
 
 
 Wanna join us in contributing to git-badges?
