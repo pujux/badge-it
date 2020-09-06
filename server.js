@@ -50,10 +50,7 @@ app.get('/visits/:user/:repo', async (req, res) => {
 		{ upsert: true, new: true }
 	).exec();
 	if (flag) console.log(`[${user}/${repo}] => ${counter}`);
-	return res.contentType('image/svg+xml').header('Cache-Control', 'no-cache,max-age=600').send(
-		await request(
-			`https://img.shields.io/badge/Visits-${counter}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`
-		).raw());
+	return res.redirect(`https://img.shields.io/badge/Visits-${counter}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`)
 });
 
 app.get('/years/:user', async (req, res) => {
@@ -62,10 +59,7 @@ app.get('/years/:user', async (req, res) => {
 		.header(githubHeaders).json();
 	if (!response.created_at) return createError(res, response.message);
 	const yearsAtGitHub = differenceInYears(Date.now(), Date.parse(response.created_at));
-	return res.contentType('image/svg+xml').header('Cache-Control', 'no-cache,max-age=600').send(
-		await request(
-			`https://img.shields.io/badge/Years-${yearsAtGitHub}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`
-		).raw());
+	return res.redirect(`https://img.shields.io/badge/Years-${yearsAtGitHub}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`)
 });
 
 app.get('/repos/:user', async (req, res) => {
@@ -73,10 +67,7 @@ app.get('/repos/:user', async (req, res) => {
 	const response = await request(`https://api.github.com/users/${user}`)
 		.header(githubHeaders).json();
 	if (!response.public_repos) return createError(res, response.message);
-	return res.contentType('image/svg+xml').send(
-		await request(
-			`https://img.shields.io/badge/Repos-${response.public_repos}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`
-		).raw());
+	return res.redirect(`https://img.shields.io/badge/Repos-${response.public_repos}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`)
 });
 
 app.get('/gists/:user', async (req, res) => {
@@ -84,10 +75,7 @@ app.get('/gists/:user', async (req, res) => {
 	const response = await request(`https://api.github.com/users/${user}/gists`)
 		.header(githubHeaders).json();
 	if (!Array.isArray(response) || response.length === 0) return createError(res, response.message);
-	return res.contentType('image/svg+xml').send(
-		await request(
-			`https://img.shields.io/badge/Gists-${response.length}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`
-		).raw());
+	return res.redirect(`https://img.shields.io/badge/Gists-${response.length}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`)
 });
 
 app.get('/updated/:user/:repo', async (req, res) => {
@@ -95,10 +83,7 @@ app.get('/updated/:user/:repo', async (req, res) => {
 	const response = await request(`https://api.github.com/repos/${user}/${repo}`)
 		.header(githubHeaders).json();
 	if (!response.id) return createError(res, response.message);
-	return res.contentType('image/svg+xml').send(
-		await request(
-			`https://img.shields.io/badge/Updated-${moment(response.updated_at).fromNow()}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`
-		).raw());
+	return res.redirect(`https://img.shields.io/badge/Updated-${moment(response.updated_at).fromNow()}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`)
 });
 
 app.get('/created/:user/:repo', async (req, res) => {
@@ -106,10 +91,7 @@ app.get('/created/:user/:repo', async (req, res) => {
 	const response = await request(`https://api.github.com/repos/${user}/${repo}`)
 		.header(githubHeaders).json();
 	if (!response.id) return createError(res, response.message);
-	return res.contentType('image/svg+xml').send(
-		await request(
-			`https://img.shields.io/badge/Created-${moment(response.created_at).fromNow()}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`
-		).raw());
+	return res.redirect(`https://img.shields.io/badge/Created-${moment(response.created_at).fromNow()}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`)
 });
 
 app.get('/commits/:periodicity/:user', async (req, res) => {
@@ -122,16 +104,13 @@ app.get('/commits/:periodicity/:user', async (req, res) => {
 				: moment().startOf(periodicities[periodicity]).format('YYYY-MM-DD')}`
 	).header(githubHeaders).json();
 	if (!response.total_count) return createError(res, response.message);
-	return res.contentType('image/svg+xml').send(
-		await request(
-			`https://img.shields.io/badge/${
-				periodicity === 'all'
-					? 'All commits'
-					: periodicity === 'daily'
-						? 'Commits%20today'
-						: `Commits%20this%20${periodicities[periodicity]}`
-			}-${response.total_count}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`
-		).raw());
+	return res.redirect(`https://img.shields.io/badge/${
+		periodicity === 'all'
+			? 'All commits'
+			: periodicity === 'daily'
+				? 'Commits%20today'
+				: `Commits%20this%20${periodicities[periodicity]}`
+	}-${response.total_count}-brightgreen${req.originalUrl.slice(req.originalUrl.indexOf('?'))}`)
 });
 
 app.get('/contributors/:user/:repo', async (req, res) => {
@@ -141,7 +120,7 @@ app.get('/contributors/:user/:repo', async (req, res) => {
 	let response = await request(`https://api.github.com/repos/${user}/${repo}/contributors`)
 		.header(githubHeaders).json();
 	if (!Array.isArray(response)) return createError(res, response.message);
-	if (bots === 'false') response = response.filter(contributor => contributor.type === 'User')
+	if (!bots) response = response.filter(contributor => contributor.type === 'User')
 	return res.contentType('image/svg+xml').send(`
 		<svg width="${(((response.length - 1) % perRow) * (size + padding)) + size}" height="${(Math.floor((response.length - 1) / perRow) * (size + padding)) + size}" role="img" 
 			xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> 
@@ -151,11 +130,11 @@ app.get('/contributors/:user/:repo', async (req, res) => {
 						<circle cx="${((i % perRow) * (size + padding)) + (size / 2)}" cy="${(Math.floor(i / perRow) * (size + padding)) + (size / 2)}" r="${size / 2}" fill="#000" />
 					</clipPath>`).join('')}
 			</defs>
-			${(await Promise.all(
-		response.map(async (contributor, i) =>
-			`<image clip-path="url(#c-${i})" width="${size}" height="${size}" x="${(i % perRow) * (size + padding)}" y="${Math.floor(i / perRow) * (size + padding)}" 
-			xlink:href="data:image/png;base64,${await toB64(contributor.avatar_url)}" />`))
-	).join(' ')}
+			${(await Promise.all(response.map(async (contributor, i) =>
+		`<a xlink:href="${contributor.html_url}">
+							<image clip-path="url(#c-${i})" width="${size}" height="${size}" x="${(i % perRow) * (size + padding)}" y="${Math.floor(i / perRow) * (size + padding)}" 
+							xlink:href="data:image/png;base64,${await toB64(contributor.avatar_url)}" />
+						</a>`))).join(' ')}
 		</svg>`);
 });
 
