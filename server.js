@@ -136,11 +136,12 @@ app.get('/commits/:periodicity/:user', async (req, res) => {
 
 app.get('/contributors/:user/:repo', async (req, res) => {
 	const { user, repo } = req.params;
-	let { size = 50, padding = 5, perRow = 10 } = req.query;
+	let { size = 50, padding = 5, perRow = 10, bots = true } = req.query;
 	[size, padding] = [parseInt(size), parseInt(padding)];
-	const response = await request(`https://api.github.com/repos/${user}/${repo}/contributors`)
+	let response = await request(`https://api.github.com/repos/${user}/${repo}/contributors`)
 		.header(githubHeaders).json();
 	if (!Array.isArray(response)) return createError(res, response.message);
+	if (bots === 'false') response = response.filter(contributor => contributor.type === 'User')
 	return res.contentType('image/svg+xml').send(`
 		<svg width="${((response.length - 1) % perRow) * (size + padding) + size}" height="${Math.floor((response.length - 1) / perRow) * (size + padding) + size}" role="img" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> 
 			<defs>

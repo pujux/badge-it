@@ -103,17 +103,19 @@ Returns a badge that shows the number of commits you have published in a specifi
 
 ---
 
-[![Contributors Display](https://badges.pufler.dev/contributors/puf17640/git-badges)](https://badges.pufler.dev/contributors/puf17640/git-badges)
+[![Contributors Display](https://badges.pufler.dev/contributors/puf17640/git-badges?size=50&padding=5&bots=true)](https://badges.pufler.dev/contributors/puf17640/git-badges)
   
 Returns an SVG that displays all contributors of the specified repository
 
+You can specify a `size` in pixels that will be used for each avatar, a `padding` in pixels that will be used between the avatars and `bots` as either 'true' or 'false' to hide bot contributors
+
 ###### Endpoint
 
-`https://badges.pufler.dev/contributors/{user}/{repo}`
+`https://badges.pufler.dev/contributors/{user}/{repo}?size={size}&padding={padding}&bots=true`
 
 ###### Markdown
 
-`[![Commits Badge](https://badges.pufler.dev/contributors/puf17640/git-badges)](https://badges.pufler.dev)`
+`[![Commits Badge](https://badges.pufler.dev/contributors/puf17640/git-badges?size=50&padding=5&bots=true)](https://badges.pufler.dev)`
 
 ## Self-deployment
 
