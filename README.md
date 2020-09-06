@@ -115,7 +115,7 @@ You can specify a `size` in pixels that will be used for each avatar, a `padding
 
 ###### Markdown
 
-`[![Commits Badge](https://badges.pufler.dev/contributors/puf17640/git-badges?size=50&padding=5&bots=true)](https://badges.pufler.dev)`
+`[![Contributors Display](https://badges.pufler.dev/contributors/puf17640/git-badges?size=50&padding=5&bots=true)](https://badges.pufler.dev)`
 
 ## Self-deployment
 
