@@ -137,23 +137,25 @@ app.get('/commits/:periodicity/:user', async (req, res) => {
 app.get('/contributors/:user/:repo', async (req, res) => {
 	const { user, repo } = req.params;
 	let { size = 50, padding = 5, perRow = 10, bots = true } = req.query;
-	[size, padding] = [parseInt(size), parseInt(padding)];
+	[size, padding, perRow, bots] = [parseInt(size), parseInt(padding), parseInt(perRow), bots !== 'false'];
 	let response = await request(`https://api.github.com/repos/${user}/${repo}/contributors`)
 		.header(githubHeaders).json();
 	if (!Array.isArray(response)) return createError(res, response.message);
 	if (bots === 'false') response = response.filter(contributor => contributor.type === 'User')
 	return res.contentType('image/svg+xml').send(`
-		<svg width="${((response.length - 1) % perRow) * (size + padding) + size}" height="${Math.floor((response.length - 1) / perRow) * (size + padding) + size}" role="img" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> 
+		<svg width="${(((response.length - 1) % perRow) * (size + padding)) + size}" height="${(Math.floor((response.length - 1) / perRow) * (size + padding)) + size}" role="img" 
+			xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> 
 			<defs>
 				${response.map((_c, i) =>
 		`<clipPath id="c-${i}">
 						<circle cx="${((i % perRow) * (size + padding)) + (size / 2)}" cy="${(Math.floor(i / perRow) * (size + padding)) + (size / 2)}" r="${size / 2}" fill="#000" />
 					</clipPath>`).join('')}
 			</defs>
-			${(await Promise.all(response.map(async (contributor, i) =>
-		`<a xlink:href="${contributor.html_url}">
-					<image clip-path="url(#c-${i})" width="${size}" height="${size}" x="${(i % perRow) * (size + padding)}" y="${Math.floor(i / perRow) * (size + padding)}" xlink:href="data:image/png;base64,${await toB64(contributor.avatar_url)}" />
-				</a>`))).join(' ')}
+			${(await Promise.all(
+		response.map(async (contributor, i) =>
+			`<image clip-path="url(#c-${i})" width="${size}" height="${size}" x="${(i % perRow) * (size + padding)}" y="${Math.floor(i / perRow) * (size + padding)}" 
+			xlink:href="data:image/png;base64,${await toB64(contributor.avatar_url)}" />`))
+	).join(' ')}
 		</svg>`);
 });
 
