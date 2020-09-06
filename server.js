@@ -4,7 +4,8 @@ const express = require('express'),
 	request = require('@aero/centra'),
 	{ differenceInYears } = require('date-fns'),
 	cron = require('cron'),
-	moment = require('moment');
+	moment = require('moment'),
+	toB64 = require('image-to-base64');
 
 const app = express(),
 	config = require('dotenv').config();
@@ -135,7 +136,7 @@ app.get('/commits/:periodicity/:user', async (req, res) => {
 
 app.get('/contributors/:user/:repo', async (req, res) => {
 	const { user, repo } = req.params;
-	let { size = 100, padding = 5 } = req.query;
+	let { size = 50, padding = 5, perRow = 10 } = req.query;
 	[size, padding] = [parseInt(size), parseInt(padding)];
 	const response = await request(`https://api.github.com/repos/${user}/${repo}/contributors`)
 		.header(githubHeaders).json();
@@ -145,13 +146,13 @@ app.get('/contributors/:user/:repo', async (req, res) => {
 			<defs>
 				${response.map((_c, i) =>
 		`<clipPath id="c-${i}">
-						<circle cx="${((i % 10) * (size + padding)) + (size / 2)}" cy="${(Math.floor(i / 10) * (size + padding)) + (size / 2)}" r="${size / 2}" fill="#000" />
+						<circle cx="${((i % perRow) * (size + padding)) + (size / 2)}" cy="${(Math.floor(i / perRow) * (size + padding)) + (size / 2)}" r="${size / 2}" fill="#000" />
 					</clipPath>`).join('')}
 			</defs>
-			${response.map((contributor, i) =>
+			${(await Promise.all(response.map(async (contributor, i) =>
 		`<a xlink:href="${contributor.html_url}">
-					<image clip-path="url(#c-${i})" width="${size}" height="${size}" x="${(i % 10) * (size + padding)}" y="${Math.floor(i / 10) * (size + padding)}" xlink:href="${contributor.avatar_url}" />
-				</a>`).join(' ')}
+					<image clip-path="url(#c-${i})" width="${size}" height="${size}" x="${(i % perRow) * (size + padding)}" y="${Math.floor(i / perRow) * (size + padding)}" xlink:href="data:image/png;base64,${await toB64(contributor.avatar_url)}" />
+				</a>`))).join(' ')}
 		</svg>`);
 });
 
