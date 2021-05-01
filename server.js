@@ -103,7 +103,7 @@ app.get('/commits/:periodicity/:user', async (req, res) => {
 				? '1970-01-01'
 				: moment().startOf(periodicities[periodicity]).format('YYYY-MM-DD')}`
 	).header(githubHeaders).json();
-	if (!response.total_count) return createError(res, response.message);
+	if (!response || response.total_count === undefined) return createError(res, response.message);
 	return res.redirect(`https://img.shields.io/badge/${
 		periodicity === 'all'
 			? 'All commits'
