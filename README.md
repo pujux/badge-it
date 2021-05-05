@@ -89,7 +89,7 @@ Returns a badge that shows when the repository was created
 
 ---
 
-[![Commits Badge](https://badges.pufler.dev/commits/monthly/puf17640)](https://badges.pufler.dev/commits/monthly/puf17640)
+[![Commits Badge](https://badges.pufler.dev/commits/all/puf17640)](https://badges.pufler.dev/commits/all/puf17640)
   
 Returns a badge that shows the number of commits you have published in a specified periodicity (yearly, monthly, weekly, daily or all)
 
@@ -99,7 +99,7 @@ Returns a badge that shows the number of commits you have published in a specifi
 
 ###### Markdown
 
-`[![Commits Badge](https://badges.pufler.dev/commits/monthly/puf17640)](https://badges.pufler.dev)`
+`[![Commits Badge](https://badges.pufler.dev/commits/all/puf17640)](https://badges.pufler.dev)`
 
 ---
 
