@@ -4,6 +4,8 @@
 
 All endpoints support the parameters that you can also use for [shields.io](https://shields.io) badges, you can check out the documentation here [shields.io styles](https://shields.io/#styles).
 
+### ‼ This project is no longer maintained/deployed. Please see https://github.com/STRRL/serverless-github-badges for an inofficial contiunation of the product. ‼
+
 ## Currently available badges 🔥
 
 [![Visits Badge](https://badges.pufler.dev/visits/puf17640/git-badges)](https://badges.pufler.dev/visits/puf17640/git-badges)
