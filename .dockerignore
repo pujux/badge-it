@@ -1,0 +1,8 @@
+node_modules/
+.git/
+.env
+.eslintrc.js
+.gitignore
+Dockerfile
+turbo.json
+.turbo
