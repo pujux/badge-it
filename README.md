@@ -4,7 +4,7 @@
 [![GitHub issues](https://img.shields.io/github/issues/pujux/badge-it?color=brightgreen)](https://github.com/pujux/badge-it/issues)
 [![GitHub forks](https://img.shields.io/github/forks/pujux/badge-it?color=brightgreen)](https://github.com/pujux/badge-it/network)
 [![GitHub license](https://img.shields.io/github/license/pujux/badge-it?color=brightgreen)](https://github.com/pujux/badge-it/blob/main/LICENSE)
-[![Twitter](https://img.shields.io/twitter/url?url=https%3A%2F%2Fgithub.com%2Fpujux%2Fbadge-it)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2F{USERNAME}%2F{REPO_NAME})
+[![Twitter](https://img.shields.io/twitter/url?url=https%3A%2F%2Fgithub.com%2Fpujux%2Fbadge-it)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Fpujux%2Fbadge-it)
 
 ## Table of Contents
 
