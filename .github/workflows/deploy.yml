@@ -46,7 +46,8 @@ jobs:
         id: meta
         with:
           images: puf17640/badge-it
-      
+          tags: type=raw,value=latest,enable={{is_default_branch}}
+                
       - uses: docker/build-push-action@v4
         with:
           context: .
