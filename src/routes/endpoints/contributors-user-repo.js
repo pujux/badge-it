@@ -1,6 +1,7 @@
 const getContext = require("../../helpers/getContext");
 const fetch = require("node-fetch");
 const generateContributorSvg = require("../../helpers/generateContributorSvg");
+const githubHeaders = require("../../helpers/githubHeaders");
 
 module.exports = async (req, res) => {
   const { user, repo } = getContext(req);
@@ -11,10 +12,11 @@ module.exports = async (req, res) => {
     req.query.bots !== "false",
   ];
 
-  let response = await fetch(`https://api.github.com/repos/${user}/${repo}/contributors`).then((res) => res.json());
+  let response = await fetch(`https://api.github.com/repos/${user}/${repo}/contributors`, { headers: githubHeaders() }).then((res) => res.json());
 
   if (!Array.isArray(response)) {
     // ERROR
+    console.error(`ERR: ${JSON.stringify(response)} `);
   }
 
   if (!bots) {

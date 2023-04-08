@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
+router.use("/health", (_, res) => res.send("OK"));
+
 router.get("/visits/:user/:repo", require("./endpoints/visits-user-repo"));
 
 router.get("/years/:user", require("./endpoints/years-user"));

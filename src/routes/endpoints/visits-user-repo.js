@@ -1,25 +1,34 @@
 const getContext = require("../../helpers/getContext");
 const fetch = require("node-fetch");
-const { createClient } = require("@supabase/supabase-js");
+const { MongoClient } = require("mongodb");
+const githubHeaders = require("../../helpers/githubHeaders");
 
-const supabase = createClient(process.env.DATABASE_URI, process.env.DATABASE_SECRET);
+const client = new MongoClient(process.env.DATABASE_URI ?? "mongodb://localhost:27017/badge-it", { useUnifiedTopology: true, useNewUrlParser: true });
+client.connect().then(() => console.info("Connected to MongoDB"));
 
 module.exports = async (req, res) => {
   const { user, repo, options } = getContext(req);
 
-  const response = await fetch(`https://api.github.com/repos/${user}/${repo}`, { headers: {} }).then((res) => res.json());
+  const response = await fetch(`https://api.github.com/repos/${user}/${repo}`, { headers: githubHeaders() }).then((res) => res.json());
 
   if (!response?.id) {
     // ERROR
+    console.error(`ERR: ${JSON.stringify(response)} `);
   }
 
-  // Implement IP whitelist for GitHub IPs
+  try {
+    const data = await client
+      .db()
+      .collection("repo-visits")
+      .findOneAndUpdate({ user, repo }, { $inc: { counter: 1 } }, { returnDocument: "after", upsert: true });
 
-  const { data: counter, error } = await supabase.rpc("update_repo_counter", { p_username: user, p_repo_name: repo });
+    if (!data.ok) {
+      // ERROR
+    }
 
-  if (error) {
+    res.redirect(`https://img.shields.io/badge/Visits-${data.value.counter}-brightgreen${options}`);
+  } catch (error) {
     // ERROR
+    res.status(500).send(error);
   }
-
-  res.redirect(`https://img.shields.io/badge/Visits-${counter}-brightgreen${options}`);
 };

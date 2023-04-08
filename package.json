@@ -6,15 +6,15 @@
   "scripts": {
     "start": "nodemon src/index.js",
     "lint": "eslint .",
-    "deploy": "sh ./tools/deploy-helper.sh"
+    "deploy": "cd tools && env $(cat ../.env | xargs) ./deploy-helper.sh"
   },
   "author": "Julian Pufler",
   "license": "ISC",
   "dependencies": {
-    "@supabase/supabase-js": "^2.14.0",
     "compression": "^1.7.4",
     "eslint": "^8.37.0",
     "express": "^4.18.2",
+    "mongodb": "^5.2.0",
     "node-fetch": "2"
   },
   "devDependencies": {
