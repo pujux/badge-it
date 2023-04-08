@@ -1,5 +1,10 @@
 function getContext(req) {
-  return { ...req.params, options: req.originalUrl.includes("?") ? req.originalUrl.slice(req.originalUrl.indexOf("?")) : "" };
+  const context = { ...req.params };
+
+  // get options from the url
+  context.options = req.originalUrl.includes("?") ? req.originalUrl.slice(req.originalUrl.indexOf("?")) : "";
+
+  return context;
 }
 
 module.exports = getContext;

@@ -5,6 +5,7 @@ const githubHeaders = require("../../helpers/githubHeaders");
 module.exports = async (req, res) => {
   const { user, options } = getContext(req);
 
+  // Get the GitHub profile information for the specified user.
   const response = await fetch(`https://api.github.com/users/${user}`, { headers: githubHeaders() }).then((res) => res.json());
 
   if (!response?.public_repos) {

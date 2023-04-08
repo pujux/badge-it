@@ -1,6 +1,7 @@
 function startOf(periodicity) {
   const now = new Date();
 
+  // Set the beginning of the relevant period
   switch (periodicity) {
     case "year":
       now.setMonth(0);
@@ -23,7 +24,11 @@ function startOf(periodicity) {
       return "1970-01-01";
   }
 
-  return `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, "0")}-${now.getDate().toString().padStart(2, "0")}`;
+  const year = now.getFullYear();
+  const month = (now.getMonth() + 1).toString().padStart(2, "0");
+  const day = now.getDate().toString().padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 }
 
 module.exports = startOf;

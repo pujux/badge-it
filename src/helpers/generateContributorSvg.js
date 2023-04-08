@@ -1,10 +1,12 @@
 const imageToBase64 = require("../helpers/imageToBase64");
 
 async function generateContributorSvg(response, size, padding, perRow) {
+  // getting avatars from response and converting them to base64
   const contributors = await Promise.all(
     response.map(async (contributor) => ({ ...contributor, avatar: await imageToBase64(contributor.avatar_url) }))
   );
 
+  // creating clipPaths for avatars
   const clipPaths = contributors
     .map(
       (_, i) =>

@@ -12,6 +12,7 @@ module.exports = async (req, res) => {
     req.query.bots !== "false",
   ];
 
+  // Make a request to the GitHub API to get the repo's contributdata
   let response = await fetch(`https://api.github.com/repos/${user}/${repo}/contributors`, { headers: githubHeaders() }).then((res) => res.json());
 
   if (!Array.isArray(response)) {
@@ -20,6 +21,7 @@ module.exports = async (req, res) => {
   }
 
   if (!bots) {
+    // Filter out bots if bots query variable is false
     response = response.filter((contributor) => contributor.type === "User");
   }
 
