@@ -2,7 +2,7 @@ name: Lint and Deploy
 
 on: 
   push:
-    branches: [ master, rewrite ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -36,7 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      - uses: docker/login-action@v1
+      - uses: docker/login-action@v2
         if: github.event_name != 'pull_request'
         with:
           username: ${{ secrets.DOCKER_USERNAME }}

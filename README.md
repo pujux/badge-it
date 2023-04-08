@@ -6,8 +6,6 @@
 [![GitHub license](https://img.shields.io/github/license/pujux/badge-it?color=brightgreen)](https://github.com/pujux/badge-it/blob/main/LICENSE)
 [![Twitter](https://img.shields.io/twitter/url?url=https%3A%2F%2Fgithub.com%2Fpujux%2Fbadge-it)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2F{USERNAME}%2F{REPO_NAME})
 
-All endpoints support the parameters you can also use for [shields.io](https://shields.io) badges, you can check out their style documentation [here](https://shields.io/#styles).
-
 ## Table of Contents
 
 - [Usage](#available-badges-🔥)
@@ -15,6 +13,8 @@ All endpoints support the parameters you can also use for [shields.io](https://s
 - [License](#license)
 
 ## Available badges 🔥
+
+All endpoints support the parameters you can also use for [shields.io](https://shields.io) badges, you can check out their style documentation [here](https://shields.io/#styles).
 
 [![Visits Badge](https://badges.pufler.dev/visits/pujux/badge-it)](https://badges.pufler.dev/visits/pujux/badge-it)
 

@@ -3,8 +3,12 @@ const fetch = require("node-fetch");
 const { MongoClient } = require("mongodb");
 const githubHeaders = require("../../helpers/githubHeaders");
 
-const client = new MongoClient(process.env.DATABASE_URI ?? "mongodb://localhost:27017/badge-it", { useUnifiedTopology: true, useNewUrlParser: true });
-client.connect().then(() => console.info("Connected to MongoDB"));
+let client;
+client = new MongoClient(process.env.DATABASE_URI ?? "mongodb://localhost:27017/badge-it", { useUnifiedTopology: true, useNewUrlParser: true });
+client
+  .connect()
+  .then(() => console.info("Connected to MongoDB"))
+  .catch((err) => console.error(`MONGO-CONN-ERR: ${JSON.stringify(err)} `));
 
 module.exports = async (req, res) => {
   const { user, repo, options } = getContext(req);
