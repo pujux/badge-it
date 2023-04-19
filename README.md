@@ -9,7 +9,7 @@
 ## Table of Contents
 
 - [Usage](#available-badges-🔥)
-- [Ideas](#got-an-idea-for-a-badge?-😀)
+- [Ideas](#got-an-idea-for-a-badge-)
 - [License](#license)
 
 ## Available badges 🔥
