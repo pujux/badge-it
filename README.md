@@ -113,19 +113,35 @@ Returns a badge that shows the number of commits you have published in a specifi
 
 ---
 
-[![Contributors Display](https://badges.pufler.dev/contributors/pujux/badge-it?size=50&padding=5&bots=true)](https://badges.pufler.dev/contributors/pujux/badge-it)
+[![Contributors Display](https://badges.pufler.dev/contributors/pujux/badge-it?size=50&padding=5&perRow=10&bots=true)](https://badges.pufler.dev/contributors/pujux/badge-it)
   
 Returns an SVG that displays all contributors of the specified repository
 
-You can specify a `size` in pixels that will be used for each avatar, a `padding` in pixels that will be used between the avatars and `bots` as either 'true' or 'false' to hide bot contributors
+You can specify `size` in pixels that will be used for each avatar, `padding` in pixels that will be used between the avatars, `perRow` to control how many avatars are shown per row and `bots` as either 'true' or 'false' to hide bot contributors
 
 ###### Endpoint
 
-`https://badges.pufler.dev/contributors/{user}/{repo}?size={size}&padding={padding}&bots=true`
+`https://badges.pufler.dev/contributors/{user}/{repo}?size={number}&padding={number}&perRow={number}&bots={boolean}`
 
 ###### Markdown
 
-`[![Contributors Display](https://badges.pufler.dev/contributors/pujux/badge-it?size=50&padding=5&bots=true)](https://badges.pufler.dev)`
+`[![Contributors Display](https://badges.pufler.dev/contributors/pujux/badge-it?size=50&padding=5&perRow=10&bots=true)](https://badges.pufler.dev)`
+
+---
+
+[![Last Stars Display](https://badges.pufler.dev/last-stars/pujux/?count=6&padding=15&perRow=3)](https://badges.pufler.dev/last-stars/pujux)
+  
+Returns an SVG that displays the last starred repositories of the specified user
+
+You can specify `count` to control how many starred repositories will be shown, `padding` in pixels that will be used between the repositories and `perRow` to control how many repositories will be shown per row
+
+###### Endpoint
+
+`https://badges.pufler.dev/last-stars/{user}?count={number}&padding={number}&perRow={number}`
+
+###### Markdown
+
+`[![Last Stars Display](https://badges.pufler.dev/last-stars/pujux?count=6&padding=15&perRow=3)](https://badges.pufler.dev)`
 
 ## Got an idea for a badge? 😀
 

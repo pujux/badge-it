@@ -8,10 +8,10 @@ client = new MongoClient(process.env.DATABASE_URI ?? "mongodb://localhost:27017/
 client
   .connect()
   .then(() => console.info("Connected to MongoDB"))
-  .catch((err) => console.error(`MONGO-CONN-ERR: ${JSON.stringify(err)} `));
+  .catch((err) => console.error(`MONGO-CONN-ERR: ${JSON.stringify(err)}`));
 
 module.exports = async (req, res) => {
-  const { user, repo, options } = getContext(req);
+  const { user, repo, color, options } = getContext(req);
 
   // Make a request to the GitHub API to get the repo's data
   const response = await fetch(`https://api.github.com/repos/${user}/${repo}`, { headers: githubHeaders() }).then((res) => res.json());
@@ -30,10 +30,10 @@ module.exports = async (req, res) => {
 
     if (!data.ok) {
       // ERROR
-      console.error(`DB-ERR: ${JSON.stringify(data)} `);
+      console.error(`DB-ERR: ${JSON.stringify(data)}`);
     }
 
-    res.redirect(`https://img.shields.io/badge/Visits-${data.value.counter}-brightgreen${options}`);
+    res.redirect(`https://img.shields.io/badge/Visits-${data.value.counter}-${color}${options}`);
   } catch (error) {
     // ERROR
     res.status(500).send(error);

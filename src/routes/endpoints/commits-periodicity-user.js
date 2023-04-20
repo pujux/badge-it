@@ -12,7 +12,7 @@ const periodicityMap = {
 };
 
 module.exports = async (req, res) => {
-  const { periodicity, user, options } = getContext(req);
+  const { user, periodicity, color, options } = getContext(req);
 
   // Fetch commits from GitHub
   const response = await fetch(`https://api.github.com/search/commits?q=author:${user}+author-date%3A>=${startOf(periodicityMap[periodicity])}`, {
@@ -23,9 +23,8 @@ module.exports = async (req, res) => {
     console.error(`ERR: ${JSON.stringify(response)} `);
   }
 
-  res.redirect(
-    `https://img.shields.io/badge/${
-      periodicity === "all" ? "All commits" : periodicity === "daily" ? "Commits%20today" : `Commits%20this%20${periodicityMap[periodicity]}`
-    }-${response.total_count}-brightgreen${options}`
-  );
+  const badgeText =
+    periodicity === "all" ? "All commits" : periodicity === "daily" ? "Commits%20today" : `Commits%20this%20${periodicityMap[periodicity]}`;
+
+  res.redirect(`https://img.shields.io/badge/${badgeText}-${response.total_count}-${color}${options}`);
 };
