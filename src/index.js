@@ -1,5 +1,6 @@
 const compression = require("compression");
 const express = require("express");
+const errorHandler = require("./middleware/errorHandler");
 const app = express();
 
 if (process.env.NODE_ENV !== "production") {
@@ -14,5 +15,7 @@ app.use(compression());
 app.use(require("./routes"));
 
 app.use((_, res) => res.redirect("https://pufler.dev/badge-it"));
+
+app.use(errorHandler);
 
 app.listen(port, () => console.info(`Server is running on port ${port}`));
