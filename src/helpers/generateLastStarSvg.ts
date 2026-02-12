@@ -1,4 +1,6 @@
-async function generateLastStarSvg(response, gap, perRow) {
+import type { GitHubStarredRepo } from "../types/github";
+
+export default function generateLastStarSvg(response: GitHubStarredRepo[], gap: number, perRow: number): string {
   const width = 300;
   const height = 85;
   const cornerRadius = 6;
@@ -11,9 +13,9 @@ async function generateLastStarSvg(response, gap, perRow) {
       return `<a xlink:href="${repo.html_url}">
         <rect width="${width}" height="${height}" style="filter: url(#shadow)" x="${x}" y="${y}" stroke-width="1.5" fill="rgb(255,255,255)" stroke="rgb(208,215,222)" rx="${cornerRadius}"></rect>
         <text class="bold-text" x="${x + wrapperPadding}" y="${y + wrapperPadding + 16}">${
-        repo.full_name.length >= 30 ? `${repo.full_name.substr(0, 27)}...` : repo.full_name
+        repo.full_name.length >= 30 ? `${repo.full_name.substring(0, 27)}...` : repo.full_name
       }</text>
-        
+
         <svg x="${x + wrapperPadding}" y="${
         y + height - wrapperPadding - 12
       }" aria-label="stars" role="img" width="14" height="14" viewBox="0 0 16 16" version="1.1" data-view-component="true" class="octicon octicon-star">
@@ -66,5 +68,3 @@ async function generateLastStarSvg(response, gap, perRow) {
   		${repos}
   	</svg>`;
 }
-
-module.exports = generateLastStarSvg;

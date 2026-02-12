@@ -1,19 +1,31 @@
 FROM node:24-alpine AS deps
 
+WORKDIR /app
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile
+
+FROM deps AS build
+
+COPY tsconfig.json ./
+COPY src ./src
+RUN yarn build
+
+FROM node:24-alpine AS prod-deps
+
 ENV NODE_ENV=production
 WORKDIR /app
-
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile --production=true && yarn cache clean
 
 FROM node:24-alpine AS runtime
 
 ENV NODE_ENV=production \
-    APP_PORT=10001
+    APP_PORT=10001 \
+    LOG_PRETTY=false
 WORKDIR /app
 
-COPY --from=deps --chown=node:node /app/node_modules ./node_modules
-COPY --chown=node:node src ./src
+COPY --from=prod-deps --chown=node:node /app/node_modules ./node_modules
+COPY --from=build --chown=node:node /app/dist ./dist
 
 USER node
 
@@ -22,4 +34,4 @@ EXPOSE 10001
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:' + (process.env.APP_PORT || 10001) + '/health').then((res) => process.exit(res.ok ? 0 : 1)).catch(() => process.exit(1))"
 
-CMD ["node", "src/index.js"]
+CMD ["node", "dist/index.js"]

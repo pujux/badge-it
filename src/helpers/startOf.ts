@@ -1,7 +1,8 @@
-function startOf(periodicity) {
+type Periodicity = "all" | "day" | "month" | "week" | "year" | null | undefined;
+
+export default function startOf(periodicity: Periodicity): string {
   const now = new Date();
 
-  // Set the beginning of the relevant period
   switch (periodicity) {
     case "year":
       now.setMonth(0);
@@ -25,10 +26,8 @@ function startOf(periodicity) {
   }
 
   const year = now.getFullYear();
-  const month = (now.getMonth() + 1).toString().padStart(2, "0");
-  const day = now.getDate().toString().padStart(2, "0");
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
 }
-
-module.exports = startOf;

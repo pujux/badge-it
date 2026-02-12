@@ -1,15 +1,18 @@
-const assert = require("node:assert/strict");
-const http = require("node:http");
-const Module = require("node:module");
-const { after, before, describe, test } = require("node:test");
+import assert from "node:assert/strict";
+import http, { type IncomingMessage, type ServerResponse } from "node:http";
+import Module from "node:module";
+import { after, before, describe, test } from "node:test";
 
-const ONE_PIXEL_PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO8GfRkAAAAASUVORK5CYII=", "base64");
+const ONE_PIXEL_PNG = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO8GfRkAAAAASUVORK5CYII=",
+  "base64"
+);
 
-function encodeBadgeSegment(value) {
+function encodeBadgeSegment(value: number | string): string {
   return encodeURIComponent(String(value)).replace(/-/g, "--");
 }
 
-function startServer(handler) {
+function startServer(handler: http.RequestListener): Promise<http.Server> {
   return new Promise((resolve, reject) => {
     const server = http.createServer(handler);
     server.listen(0, "127.0.0.1", () => resolve(server));
@@ -17,31 +20,37 @@ function startServer(handler) {
   });
 }
 
-function closeServer(server) {
+function closeServer(server: http.Server): Promise<void> {
   return new Promise((resolve, reject) => {
     server.close((error) => {
       if (error) {
         reject(error);
         return;
       }
+
       resolve();
     });
   });
 }
 
-function serverOrigin(server) {
+function serverOrigin(server: http.Server): string {
   const address = server.address();
+
+  if (!address || typeof address === "string") {
+    throw new Error("Unexpected server address");
+  }
+
   return `http://127.0.0.1:${address.port}`;
 }
 
-function json(res, statusCode, payload) {
+function json(res: ServerResponse, statusCode: number, payload: unknown): void {
   res.writeHead(statusCode, { "content-type": "application/json" });
   res.end(JSON.stringify(payload));
 }
 
-function createGitHubHandler() {
+function createGitHubHandler(): (req: IncomingMessage, res: ServerResponse) => void {
   return (req, res) => {
-    const url = new URL(req.url, "http://127.0.0.1");
+    const url = new URL(req.url ?? "/", "http://127.0.0.1");
     const origin = `http://${req.headers.host}`;
 
     if (url.pathname === "/users/testuser") {
@@ -132,12 +141,13 @@ function createGitHubHandler() {
   };
 }
 
-const originalModuleLoad = Module._load;
-const repoCounters = new Map();
+type ModuleLoadFunction = (request: string, parent: NodeModule | null, isMain: boolean) => unknown;
+const moduleWithLoad = Module as unknown as { _load: ModuleLoadFunction };
+const originalModuleLoad = moduleWithLoad._load;
+const repoCounters = new Map<string, number>();
 
 class FakeMongoClient {
-  connect() {
-    // Keep unresolved so the module-level "Connected to MongoDB" log is not emitted in tests.
+  connect(): Promise<never> {
     return new Promise(() => {});
   }
 
@@ -145,16 +155,20 @@ class FakeMongoClient {
     return {
       collection() {
         return {
-          async findOneAndUpdate({ user, repo }, update) {
+          async findOneAndUpdate(
+            { user, repo }: { user: string; repo: string },
+            update: { $inc?: { counter?: number } }
+          ): Promise<{ counter: number }> {
             if (repo === "storage-fail") {
               throw new Error("mocked mongo write failure");
             }
 
             const key = `${user}/${repo}`;
             const current = repoCounters.get(key) ?? 0;
-            const increment = update?.$inc?.counter ?? 0;
+            const increment = update.$inc?.counter ?? 0;
             const next = current + increment;
             repoCounters.set(key, next);
+
             return { counter: next };
           },
         };
@@ -164,21 +178,22 @@ class FakeMongoClient {
 }
 
 describe("endpoint integration", () => {
-  let githubServer;
-  let appServer;
-  let appOrigin;
-  let originalGitHubBaseUrl;
-  let originalDatabaseUri;
-  let originalAccessToken;
-  let originalLogLevel;
+  let githubServer: http.Server;
+  let appServer: http.Server;
+  let appOrigin = "";
+  let originalGitHubBaseUrl: string | undefined;
+  let originalDatabaseUri: string | undefined;
+  let originalAccessToken: string | undefined;
+  let originalLogLevel: string | undefined;
 
   before(async () => {
-    Module._load = function mockMongoLoad(request, parent, isMain) {
+    moduleWithLoad._load = ((request: string, parent: NodeModule | null, isMain: boolean) => {
       if (request === "mongodb") {
         return { MongoClient: FakeMongoClient };
       }
-      return originalModuleLoad.call(this, request, parent, isMain);
-    };
+
+      return originalModuleLoad.call(moduleWithLoad, request, parent, isMain);
+    }) as ModuleLoadFunction;
 
     githubServer = await startServer(createGitHubHandler());
 
@@ -192,8 +207,9 @@ describe("endpoint integration", () => {
     process.env.GITHUB_ACCESS_TOKEN = "";
     process.env.LOG_LEVEL = "silent";
 
-    const createApp = require("../src/app");
+    const { default: createApp } = await import("../src/app");
     const app = createApp();
+
     appServer = await startServer(app);
     appOrigin = serverOrigin(appServer);
   });
@@ -201,7 +217,8 @@ describe("endpoint integration", () => {
   after(async () => {
     await closeServer(appServer);
     await closeServer(githubServer);
-    Module._load = originalModuleLoad;
+
+    moduleWithLoad._load = originalModuleLoad;
     repoCounters.clear();
 
     if (originalGitHubBaseUrl === undefined) {
@@ -229,12 +246,13 @@ describe("endpoint integration", () => {
     }
   });
 
-  async function request(pathname) {
+  async function request(pathname: string): Promise<Response> {
     return fetch(`${appOrigin}${pathname}`, { redirect: "manual" });
   }
 
-  async function readResponse(response) {
+  async function readResponse(response: Response): Promise<{ status: number; location: string | null; contentType: string; body: string }> {
     const body = await response.text();
+
     return {
       status: response.status,
       location: response.headers.get("location"),
@@ -243,7 +261,7 @@ describe("endpoint integration", () => {
     };
   }
 
-  function assertBadgeRedirect(location, { label, color }) {
+  function assertBadgeRedirect(location: string | null, { label, color }: { label: string; color: string }): asserts location is string {
     assert.ok(location, "location header should be set");
     assert.match(location, /^https:\/\/img\.shields\.io\/badge\//);
     assert.match(location, new RegExp(`/badge/${encodeBadgeSegment(label)}-`));
@@ -343,12 +361,14 @@ describe("endpoint integration", () => {
   test("GET /visits/:user/:repo increments counter and redirects", async () => {
     const firstResponse = await request("/visits/testuser/testrepo");
     const firstResult = await readResponse(firstResponse);
+
     assert.equal(firstResult.status, 302);
     assertBadgeRedirect(firstResult.location, { label: "Visits", color: "brightgreen" });
     assert.match(firstResult.location, /-1-brightgreen/);
 
     const secondResponse = await request("/visits/testuser/testrepo");
     const secondResult = await readResponse(secondResponse);
+
     assert.equal(secondResult.status, 302);
     assertBadgeRedirect(secondResult.location, { label: "Visits", color: "brightgreen" });
     assert.match(secondResult.location, /-2-brightgreen/);

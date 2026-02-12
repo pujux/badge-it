@@ -1,8 +1,5 @@
-// This function takes a image URL and return a base64 string of the image.
-async function imageToBase64(url) {
+export default async function imageToBase64(url: string): Promise<string> {
   const response = await fetch(url);
   const arrayBuffer = await response.arrayBuffer();
   return Buffer.from(arrayBuffer).toString("base64");
 }
-
-module.exports = imageToBase64;
