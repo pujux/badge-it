@@ -15,20 +15,27 @@ function isHttpError(error: unknown): error is HttpError {
   return typeof error === "object" && error !== null && "statusCode" in error;
 }
 
-function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(createHttpError(504, message)), timeoutMs);
+function isAbortError(error: unknown): boolean {
+  return typeof error === "object" && error !== null && "name" in error && (error as { name?: unknown }).name === "AbortError";
+}
 
-    void promise
-      .then((value) => {
-        clearTimeout(timer);
-        resolve(value);
-      })
-      .catch((error: unknown) => {
-        clearTimeout(timer);
-        reject(error);
-      });
-  });
+async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: number, timeoutMessage: string): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => {
+    controller.abort();
+  }, timeoutMs);
+
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } catch (error: unknown) {
+    if (isAbortError(error)) {
+      throw createHttpError(504, timeoutMessage);
+    }
+
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export default async function fetchGitHubJson<T = unknown>(path: string, options: FetchGitHubJsonOptions = {}): Promise<T> {
@@ -38,7 +45,7 @@ export default async function fetchGitHubJson<T = unknown>(path: string, options
 
   let response: Response;
   try {
-    response = await withTimeout(fetch(url, { headers: { ...githubHeaders(), ...headers } }), timeoutMs, `GitHub request timed out for ${path}`);
+    response = await fetchWithTimeout(url, { headers: { ...githubHeaders(), ...headers } }, timeoutMs, `GitHub request timed out for ${path}`);
   } catch (error: unknown) {
     if (isHttpError(error)) {
       throw error;
@@ -59,12 +66,11 @@ export default async function fetchGitHubJson<T = unknown>(path: string, options
     const rateLimited = response.status === 403 && response.headers.get("x-ratelimit-remaining") === "0";
     const statusCode = rateLimited ? 429 : response.status === 404 ? 404 : 502;
     const payloadMessage = typeof payload === "object" && payload !== null && "message" in payload ? payload.message : undefined;
-    const message =
-      rateLimited
-        ? "GitHub API rate limit exceeded"
-        : typeof payloadMessage === "string"
-          ? `GitHub API error: ${payloadMessage}`
-          : `GitHub API request failed with status ${response.status}`;
+    const message = rateLimited
+      ? "GitHub API rate limit exceeded"
+      : typeof payloadMessage === "string"
+        ? `GitHub API error: ${payloadMessage}`
+        : `GitHub API request failed with status ${response.status}`;
 
     throw createHttpError(statusCode, message, payload);
   }

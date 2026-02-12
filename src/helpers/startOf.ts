@@ -1,7 +1,7 @@
 type Periodicity = "all" | "day" | "month" | "week" | "year" | null | undefined;
 
-export default function startOf(periodicity: Periodicity): string {
-  const now = new Date();
+export default function startOf(periodicity: Periodicity, referenceDate: Date = new Date()): string {
+  const now = new Date(referenceDate);
 
   switch (periodicity) {
     case "year":
@@ -14,7 +14,8 @@ export default function startOf(periodicity: Periodicity): string {
       now.setHours(0, 0, 0, 0);
       break;
     case "week":
-      now.setDate(now.getDate() - now.getDay() + 1);
+      // ISO week starts on Monday (getDay: Sunday=0 => 7).
+      now.setDate(now.getDate() - (now.getDay() || 7) + 1);
       now.setHours(0, 0, 0, 0);
       break;
     case "day":

@@ -1,7 +1,18 @@
 import pino from "pino";
 
 const isProduction = process.env.NODE_ENV === "production";
-const shouldUsePretty = process.env.LOG_PRETTY !== undefined ? process.env.LOG_PRETTY !== "false" : !isProduction;
+const prettyRequested = process.env.LOG_PRETTY !== undefined ? process.env.LOG_PRETTY !== "false" : !isProduction;
+
+function hasPrettyTransport(): boolean {
+  try {
+    require.resolve("pino-pretty");
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const shouldUsePretty = prettyRequested && hasPrettyTransport();
 
 const loggerOptions: pino.LoggerOptions = {
   level: process.env.LOG_LEVEL ?? "info",

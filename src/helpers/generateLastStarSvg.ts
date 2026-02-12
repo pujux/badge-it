@@ -1,6 +1,10 @@
 import type { GitHubStarredRepo } from "../types/github";
 
 export default function generateLastStarSvg(response: GitHubStarredRepo[], gap: number, perRow: number): string {
+  if (response.length === 0) {
+    return `<svg width="1" height="1" role="img" xmlns="http://www.w3.org/2000/svg"></svg>`;
+  }
+
   const width = 300;
   const height = 85;
   const cornerRadius = 6;

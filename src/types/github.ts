@@ -6,6 +6,7 @@ export interface GitHubSearchCommitsPayload {
 export interface GitHubUserPayload {
   created_at?: string;
   public_repos?: number;
+  public_gists?: number;
   message?: string;
 }
 

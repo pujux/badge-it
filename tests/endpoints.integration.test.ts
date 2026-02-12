@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import http, { type IncomingMessage, type ServerResponse } from "node:http";
-import Module from "node:module";
 import { after, before, describe, test } from "node:test";
+
+import type { VisitsStore } from "../src/services/visitsStore";
 
 const ONE_PIXEL_PNG = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO8GfRkAAAAASUVORK5CYII=",
@@ -57,6 +58,7 @@ function createGitHubHandler(): (req: IncomingMessage, res: ServerResponse) => v
       json(res, 200, {
         created_at: "2020-01-01T00:00:00.000Z",
         public_repos: 42,
+        public_gists: 3,
       });
       return;
     }
@@ -67,7 +69,22 @@ function createGitHubHandler(): (req: IncomingMessage, res: ServerResponse) => v
     }
 
     if (url.pathname === "/users/testuser/gists") {
-      json(res, 200, [{ id: "g1" }, { id: "g2" }, { id: "g3" }]);
+      json(
+        res,
+        200,
+        Array.from({ length: 99 }, (_, index) => ({
+          id: `g-${index}`,
+        }))
+      );
+      return;
+    }
+
+    if (url.pathname === "/users/emptystar") {
+      json(res, 200, {
+        created_at: "2020-01-01T00:00:00.000Z",
+        public_repos: 0,
+        public_gists: 0,
+      });
       return;
     }
 
@@ -106,6 +123,11 @@ function createGitHubHandler(): (req: IncomingMessage, res: ServerResponse) => v
       return;
     }
 
+    if (url.pathname === "/repos/testuser/empty/contributors") {
+      json(res, 200, []);
+      return;
+    }
+
     if (url.pathname === "/users/testuser/starred") {
       json(res, 200, [
         {
@@ -126,6 +148,11 @@ function createGitHubHandler(): (req: IncomingMessage, res: ServerResponse) => v
       return;
     }
 
+    if (url.pathname === "/users/emptystar/starred") {
+      json(res, 200, []);
+      return;
+    }
+
     if (url.pathname === "/search/commits") {
       json(res, 200, { total_count: 17 });
       return;
@@ -141,74 +168,48 @@ function createGitHubHandler(): (req: IncomingMessage, res: ServerResponse) => v
   };
 }
 
-type ModuleLoadFunction = (request: string, parent: NodeModule | null, isMain: boolean) => unknown;
-const moduleWithLoad = Module as unknown as { _load: ModuleLoadFunction };
-const originalModuleLoad = moduleWithLoad._load;
-const repoCounters = new Map<string, number>();
+function createFakeVisitsStore(): VisitsStore {
+  const repoCounters = new Map<string, number>();
 
-class FakeMongoClient {
-  connect(): Promise<never> {
-    return new Promise(() => {});
-  }
+  return {
+    async increment(user: string, repo: string): Promise<number> {
+      if (repo === "storage-fail") {
+        throw new Error("mocked mongo write failure");
+      }
 
-  db() {
-    return {
-      collection() {
-        return {
-          async findOneAndUpdate(
-            { user, repo }: { user: string; repo: string },
-            update: { $inc?: { counter?: number } }
-          ): Promise<{ counter: number }> {
-            if (repo === "storage-fail") {
-              throw new Error("mocked mongo write failure");
-            }
+      const key = `${user}/${repo}`;
+      const current = repoCounters.get(key) ?? 0;
+      const next = current + 1;
+      repoCounters.set(key, next);
 
-            const key = `${user}/${repo}`;
-            const current = repoCounters.get(key) ?? 0;
-            const increment = update.$inc?.counter ?? 0;
-            const next = current + increment;
-            repoCounters.set(key, next);
-
-            return { counter: next };
-          },
-        };
-      },
-    };
-  }
+      return next;
+    },
+  };
 }
 
 describe("endpoint integration", () => {
   let githubServer: http.Server;
   let appServer: http.Server;
+  let visitsStore: VisitsStore;
   let appOrigin = "";
   let originalGitHubBaseUrl: string | undefined;
-  let originalDatabaseUri: string | undefined;
   let originalAccessToken: string | undefined;
   let originalLogLevel: string | undefined;
 
   before(async () => {
-    moduleWithLoad._load = ((request: string, parent: NodeModule | null, isMain: boolean) => {
-      if (request === "mongodb") {
-        return { MongoClient: FakeMongoClient };
-      }
-
-      return originalModuleLoad.call(moduleWithLoad, request, parent, isMain);
-    }) as ModuleLoadFunction;
-
     githubServer = await startServer(createGitHubHandler());
+    visitsStore = createFakeVisitsStore();
 
     originalGitHubBaseUrl = process.env.GITHUB_API_BASE_URL;
-    originalDatabaseUri = process.env.DATABASE_URI;
     originalAccessToken = process.env.GITHUB_ACCESS_TOKEN;
     originalLogLevel = process.env.LOG_LEVEL;
 
     process.env.GITHUB_API_BASE_URL = serverOrigin(githubServer);
-    process.env.DATABASE_URI = "mongodb://unused-for-tests";
     process.env.GITHUB_ACCESS_TOKEN = "";
     process.env.LOG_LEVEL = "silent";
 
     const { default: createApp } = await import("../src/app");
-    const app = createApp();
+    const app = createApp({ visitsStore });
 
     appServer = await startServer(app);
     appOrigin = serverOrigin(appServer);
@@ -218,19 +219,10 @@ describe("endpoint integration", () => {
     await closeServer(appServer);
     await closeServer(githubServer);
 
-    moduleWithLoad._load = originalModuleLoad;
-    repoCounters.clear();
-
     if (originalGitHubBaseUrl === undefined) {
       delete process.env.GITHUB_API_BASE_URL;
     } else {
       process.env.GITHUB_API_BASE_URL = originalGitHubBaseUrl;
-    }
-
-    if (originalDatabaseUri === undefined) {
-      delete process.env.DATABASE_URI;
-    } else {
-      process.env.DATABASE_URI = originalDatabaseUri;
     }
 
     if (originalAccessToken === undefined) {
@@ -293,6 +285,16 @@ describe("endpoint integration", () => {
     assert.match(result.location, /-42-brightgreen/);
   });
 
+  test("GET /repos/:user with only color query has clean options", async () => {
+    const response = await request("/repos/testuser?color=blue");
+    const result = await readResponse(response);
+
+    assert.equal(result.status, 302);
+    assertBadgeRedirect(result.location, { label: "Repos", color: "blue" });
+    assert.doesNotMatch(result.location, /\?$/);
+    assert.doesNotMatch(result.location, /\?&/);
+  });
+
   test("GET /gists/:user redirects to gist-count badge", async () => {
     const response = await request("/gists/testuser");
     const result = await readResponse(response);
@@ -338,6 +340,16 @@ describe("endpoint integration", () => {
     assert.doesNotMatch(result.body, /apps\/bot-user/);
   });
 
+  test("GET /contributors/:user/:repo handles empty contributor lists", async () => {
+    const response = await request("/contributors/testuser/empty");
+    const result = await readResponse(response);
+
+    assert.equal(result.status, 200);
+    assert.match(result.contentType, /image\/svg\+xml/);
+    assert.match(result.body, /width="1"/);
+    assert.match(result.body, /height="1"/);
+  });
+
   test("GET /last-stars/:user returns SVG", async () => {
     const response = await request("/last-stars/testuser?count=2&gap=10&perRow=1");
     const result = await readResponse(response);
@@ -347,6 +359,16 @@ describe("endpoint integration", () => {
     assert.match(result.body, /<svg/);
     assert.match(result.body, /owner\/repo-one/);
     assert.match(result.body, /owner\/repo-two/);
+  });
+
+  test("GET /last-stars/:user handles empty starred repositories", async () => {
+    const response = await request("/last-stars/emptystar");
+    const result = await readResponse(response);
+
+    assert.equal(result.status, 200);
+    assert.match(result.contentType, /image\/svg\+xml/);
+    assert.match(result.body, /width="1"/);
+    assert.match(result.body, /height="1"/);
   });
 
   test("GET /visits/:user/:repo returns not-found badge for missing repo", async () => {

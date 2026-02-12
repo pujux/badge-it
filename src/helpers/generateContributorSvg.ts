@@ -5,6 +5,10 @@ import type { GitHubContributor } from "../types/github";
 type ContributorWithAvatar = GitHubContributor & { avatar: string };
 
 export default async function generateContributorSvg(contributors: GitHubContributor[], size: number, padding: number, perRow: number): Promise<string> {
+  if (contributors.length === 0) {
+    return `<svg width="1" height="1" role="img" xmlns="http://www.w3.org/2000/svg"></svg>`;
+  }
+
   const contributorsWithAvatars: ContributorWithAvatar[] = await Promise.all(
     contributors.map(async (contributor) => ({
       ...contributor,
