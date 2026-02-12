@@ -53,6 +53,18 @@ class MongoVisitsStore implements VisitsStore {
 
     return updated.counter;
   }
+
+  async close(): Promise<void> {
+    try {
+      await this.client.close();
+      logger.info({ component: "mongodb" }, "Closed MongoDB connection");
+    } catch (error: unknown) {
+      logger.error({ err: error, component: "mongodb" }, "Failed to close MongoDB connection");
+      throw error;
+    } finally {
+      this.connectionPromise = null;
+    }
+  }
 }
 
 export function createMongoVisitsStore(databaseUri = process.env.DATABASE_URI ?? "mongodb://localhost:27017/badge-it"): VisitsStore {

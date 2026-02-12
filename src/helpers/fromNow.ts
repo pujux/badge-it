@@ -1,10 +1,11 @@
 function getDiffInUnits(diffInMs: number, unitInMs: number): number {
-  return Math.round(diffInMs / unitInMs);
+  return Math.max(1, Math.floor(diffInMs / unitInMs));
 }
 
 export default function fromNow(date: Date | number | string): string {
   const now = new Date();
-  const diffInMs = now.getTime() - new Date(date).getTime();
+  const parsedDateMs = new Date(date).getTime();
+  const diffInMs = now.getTime() - parsedDateMs;
 
   const minute = 60 * 1000;
   const hour = 60 * minute;
@@ -13,7 +14,7 @@ export default function fromNow(date: Date | number | string): string {
   const month = 30 * day;
   const year = 365 * day;
 
-  if (diffInMs < minute) {
+  if (!Number.isFinite(diffInMs) || diffInMs < minute) {
     return "just now";
   }
 

@@ -33,10 +33,6 @@
     "tsx": "^4.20.5",
     "typescript": "^5.9.2"
   },
-  "resolutions": {
-    "braces": "3.0.3",
-    "brace-expansion": "1.1.12"
-  },
   "engines": {
     "node": ">=24 <25"
   }
