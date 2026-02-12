@@ -1,7 +1,7 @@
 const githubHeaders = require("./githubHeaders");
 const createHttpError = require("./httpError");
 
-const GITHUB_API_BASE_URL = "https://api.github.com";
+const DEFAULT_GITHUB_API_BASE_URL = "https://api.github.com";
 const DEFAULT_TIMEOUT_MS = 8000;
 
 function withTimeout(promise, timeoutMs, message) {
@@ -22,7 +22,8 @@ function withTimeout(promise, timeoutMs, message) {
 
 async function fetchGitHubJson(path, options = {}) {
   const { headers = {}, timeoutMs = DEFAULT_TIMEOUT_MS } = options;
-  const url = `${GITHUB_API_BASE_URL}${path}`;
+  const baseUrl = process.env.GITHUB_API_BASE_URL ?? DEFAULT_GITHUB_API_BASE_URL;
+  const url = `${baseUrl}${path}`;
 
   let response;
   try {
@@ -47,8 +48,8 @@ async function fetchGitHubJson(path, options = {}) {
     const message = rateLimited
       ? "GitHub API rate limit exceeded"
       : typeof payload?.message === "string"
-      ? `GitHub API error: ${payload.message}`
-      : `GitHub API request failed with status ${response.status}`;
+        ? `GitHub API error: ${payload.message}`
+        : `GitHub API request failed with status ${response.status}`;
 
     throw createHttpError(statusCode, message, payload);
   }

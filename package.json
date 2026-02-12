@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "node --test"
   },
   "author": "Julian Pufler",
   "license": "ISC",
@@ -26,6 +27,6 @@
     "brace-expansion": "1.1.12"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=24.13 <25"
   }
 }
