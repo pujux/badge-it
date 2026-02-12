@@ -1,6 +1,7 @@
 const getContext = require("../../helpers/getContext");
 const fetchGitHubJson = require("../../helpers/fetchGitHubJson");
 const createHttpError = require("../../helpers/httpError");
+const logger = require("../../helpers/logger");
 const redirectBadge = require("../../helpers/redirectBadge");
 const { assertGitHubIdentifier } = require("../../helpers/validators");
 const { MongoClient } = require("mongodb");
@@ -9,8 +10,8 @@ const client = new MongoClient(process.env.DATABASE_URI ?? "mongodb://localhost:
 
 client
   .connect()
-  .then(() => console.info("Connected to MongoDB"))
-  .catch((err) => console.error(`MONGO-CONN-ERR: ${JSON.stringify(err)}`));
+  .then(() => logger.info({ component: "mongodb" }, "Connected to MongoDB"))
+  .catch((err) => logger.error({ err, component: "mongodb" }, "Failed to connect to MongoDB"));
 
 module.exports = async (req, res) => {
   const { user, repo, color, options } = getContext(req);

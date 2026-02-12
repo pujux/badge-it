@@ -1,9 +1,24 @@
 const express = require("express");
 const asyncHandler = require("../helpers/asyncHandler");
+const logger = require("../helpers/logger");
 const router = express.Router();
 
-router.use((req, _, next) => {
-  console.info(`REQ: ${req.ip} ${req.method} ${req.url} `);
+router.use((req, res, next) => {
+  const startedAt = process.hrtime.bigint();
+  res.on("finish", () => {
+    const durationMs = Number(process.hrtime.bigint() - startedAt) / 1e6;
+    logger.info(
+      {
+        ip: req.ip,
+        method: req.method,
+        url: req.originalUrl,
+        statusCode: res.statusCode,
+        durationMs: Number(durationMs.toFixed(1)),
+      },
+      "Request handled"
+    );
+  });
+
   next();
 });
 

@@ -3,10 +3,7 @@ const http = require("node:http");
 const Module = require("node:module");
 const { after, before, describe, test } = require("node:test");
 
-const ONE_PIXEL_PNG = Buffer.from(
-  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO8GfRkAAAAASUVORK5CYII=",
-  "base64"
-);
+const ONE_PIXEL_PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO8GfRkAAAAASUVORK5CYII=", "base64");
 
 function encodeBadgeSegment(value) {
   return encodeURIComponent(String(value)).replace(/-/g, "--");
@@ -173,6 +170,7 @@ describe("endpoint integration", () => {
   let originalGitHubBaseUrl;
   let originalDatabaseUri;
   let originalAccessToken;
+  let originalLogLevel;
 
   before(async () => {
     Module._load = function mockMongoLoad(request, parent, isMain) {
@@ -187,10 +185,12 @@ describe("endpoint integration", () => {
     originalGitHubBaseUrl = process.env.GITHUB_API_BASE_URL;
     originalDatabaseUri = process.env.DATABASE_URI;
     originalAccessToken = process.env.GITHUB_ACCESS_TOKEN;
+    originalLogLevel = process.env.LOG_LEVEL;
 
     process.env.GITHUB_API_BASE_URL = serverOrigin(githubServer);
     process.env.DATABASE_URI = "mongodb://unused-for-tests";
     process.env.GITHUB_ACCESS_TOKEN = "";
+    process.env.LOG_LEVEL = "silent";
 
     const createApp = require("../src/app");
     const app = createApp();
@@ -220,6 +220,12 @@ describe("endpoint integration", () => {
       delete process.env.GITHUB_ACCESS_TOKEN;
     } else {
       process.env.GITHUB_ACCESS_TOKEN = originalAccessToken;
+    }
+
+    if (originalLogLevel === undefined) {
+      delete process.env.LOG_LEVEL;
+    } else {
+      process.env.LOG_LEVEL = originalLogLevel;
     }
   });
 

@@ -1,5 +1,15 @@
+const logger = require("../helpers/logger");
+
 function errorHandler(err, req, res, next) {
-  console.error(`REQ-ERR: ${req.ip} ${req.method} ${req.originalUrl} ${err?.message ?? "Unknown error"}`);
+  logger.error(
+    {
+      err,
+      ip: req.ip,
+      method: req.method,
+      url: req.originalUrl,
+    },
+    "Request failed"
+  );
 
   if (res.headersSent) {
     return next(err);
