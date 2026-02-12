@@ -1,6 +1,7 @@
 const getContext = require("../../helpers/getContext");
 const fetchGitHubJson = require("../../helpers/fetchGitHubJson");
 const createHttpError = require("../../helpers/httpError");
+const redirectBadge = require("../../helpers/redirectBadge");
 const { assertGitHubIdentifier } = require("../../helpers/validators");
 const { MongoClient } = require("mongodb");
 
@@ -21,7 +22,7 @@ module.exports = async (req, res) => {
     response = await fetchGitHubJson(`/repos/${user}/${repo}`);
   } catch (error) {
     if (error?.statusCode === 404) {
-      res.redirect(`https://img.shields.io/badge/Visits-Repo%20not%20found-${color}${options}`);
+      redirectBadge(res, { label: "Visits", message: "Repo not found", color, options });
       return;
     }
     throw error;
@@ -45,5 +46,5 @@ module.exports = async (req, res) => {
     throw createHttpError(503, "Visit counter storage returned invalid response");
   }
 
-  res.redirect(`https://img.shields.io/badge/Visits-${data.value.counter}-${color}${options}`);
+  redirectBadge(res, { label: "Visits", message: data.value.counter, color, options });
 };

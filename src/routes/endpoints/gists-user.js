@@ -1,6 +1,7 @@
 const getContext = require("../../helpers/getContext");
 const fetchGitHubJson = require("../../helpers/fetchGitHubJson");
 const createHttpError = require("../../helpers/httpError");
+const redirectBadge = require("../../helpers/redirectBadge");
 const { assertGitHubIdentifier } = require("../../helpers/validators");
 
 module.exports = async (req, res) => {
@@ -14,5 +15,5 @@ module.exports = async (req, res) => {
     throw createHttpError(502, "GitHub returned invalid gists payload");
   }
 
-  res.redirect(`https://img.shields.io/badge/Gists-${response.length}-${color}${options}`);
+  redirectBadge(res, { label: "Gists", message: response.length, color, options });
 };

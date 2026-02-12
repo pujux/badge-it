@@ -2,6 +2,7 @@ const getContext = require("../../helpers/getContext");
 const fetchGitHubJson = require("../../helpers/fetchGitHubJson");
 const fromNow = require("../../helpers/fromNow");
 const createHttpError = require("../../helpers/httpError");
+const redirectBadge = require("../../helpers/redirectBadge");
 const { assertGitHubIdentifier } = require("../../helpers/validators");
 
 module.exports = async (req, res) => {
@@ -16,5 +17,5 @@ module.exports = async (req, res) => {
     throw createHttpError(502, "GitHub returned invalid repository creation date");
   }
 
-  res.redirect(`https://img.shields.io/badge/Created-${fromNow(response.created_at)}-${color}${options}`);
+  redirectBadge(res, { label: "Created", message: fromNow(response.created_at), color, options });
 };

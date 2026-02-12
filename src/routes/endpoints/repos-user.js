@@ -1,6 +1,7 @@
 const getContext = require("../../helpers/getContext");
 const fetchGitHubJson = require("../../helpers/fetchGitHubJson");
 const createHttpError = require("../../helpers/httpError");
+const redirectBadge = require("../../helpers/redirectBadge");
 const { assertGitHubIdentifier } = require("../../helpers/validators");
 
 module.exports = async (req, res) => {
@@ -14,5 +15,5 @@ module.exports = async (req, res) => {
     throw createHttpError(502, "GitHub returned invalid repository count");
   }
 
-  res.redirect(`https://img.shields.io/badge/Repos-${response.public_repos}-${color}${options}`);
+  redirectBadge(res, { label: "Repos", message: response.public_repos, color, options });
 };
