@@ -2,9 +2,9 @@ const getContext = require("../../helpers/getContext");
 const fetchGitHubJson = require("../../helpers/fetchGitHubJson");
 const startOf = require("../../helpers/startOf");
 const createHttpError = require("../../helpers/httpError");
+const { assertGitHubIdentifier, assertOneOf } = require("../../helpers/validators");
 
 const periodicityMap = {
-  daily: "day",
   weekly: "week",
   monthly: "month",
   yearly: "year",
@@ -13,6 +13,8 @@ const periodicityMap = {
 
 module.exports = async (req, res) => {
   const { user, periodicity, color, options } = getContext(req);
+  assertGitHubIdentifier(user, "user");
+  assertOneOf(periodicity, "periodicity", Object.keys(periodicityMap));
 
   // Fetch commits from GitHub
   const response = await fetchGitHubJson(`/search/commits?q=author:${user}+author-date%3A>=${startOf(periodicityMap[periodicity])}`);

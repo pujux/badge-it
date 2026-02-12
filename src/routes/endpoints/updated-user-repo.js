@@ -2,9 +2,12 @@ const getContext = require("../../helpers/getContext");
 const fetchGitHubJson = require("../../helpers/fetchGitHubJson");
 const fromNow = require("../../helpers/fromNow");
 const createHttpError = require("../../helpers/httpError");
+const { assertGitHubIdentifier } = require("../../helpers/validators");
 
 module.exports = async (req, res) => {
   const { user, repo, color, options } = getContext(req);
+  assertGitHubIdentifier(user, "user");
+  assertGitHubIdentifier(repo, "repo");
 
   // Make a request to the GitHub API to get the repo's data
   const response = await fetchGitHubJson(`/repos/${user}/${repo}`);

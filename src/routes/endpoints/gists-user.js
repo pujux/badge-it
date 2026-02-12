@@ -1,9 +1,11 @@
 const getContext = require("../../helpers/getContext");
 const fetchGitHubJson = require("../../helpers/fetchGitHubJson");
 const createHttpError = require("../../helpers/httpError");
+const { assertGitHubIdentifier } = require("../../helpers/validators");
 
 module.exports = async (req, res) => {
   const { user, color, options } = getContext(req);
+  assertGitHubIdentifier(user, "user");
 
   // Get the GitHub profile information for the specified user.
   const response = await fetchGitHubJson(`/users/${user}/gists`);

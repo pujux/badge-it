@@ -1,6 +1,7 @@
 const getContext = require("../../helpers/getContext");
 const fetchGitHubJson = require("../../helpers/fetchGitHubJson");
 const createHttpError = require("../../helpers/httpError");
+const { assertGitHubIdentifier } = require("../../helpers/validators");
 const { MongoClient } = require("mongodb");
 
 let client;
@@ -12,6 +13,8 @@ client
 
 module.exports = async (req, res) => {
   const { user, repo, color, options } = getContext(req);
+  assertGitHubIdentifier(user, "user");
+  assertGitHubIdentifier(repo, "repo");
 
   let response;
   try {

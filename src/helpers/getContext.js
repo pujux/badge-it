@@ -1,3 +1,5 @@
+const { assertColor } = require("./validators");
+
 const colorQueryRegex = /&{0,1}color=[^&]+/;
 
 function getContext(req) {
@@ -10,6 +12,8 @@ function getContext(req) {
     context.color = context.options.match(colorQueryRegex)[0].split("=")[1];
     context.options = context.options.replace(colorQueryRegex, "");
   }
+
+  assertColor(context.color);
 
   return context;
 }
