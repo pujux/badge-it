@@ -5,7 +5,7 @@ import getContext from "../../helpers/getContext";
 import createHttpError from "../../helpers/httpError";
 import redirectBadge from "../../helpers/redirectBadge";
 import startOf from "../../helpers/startOf";
-import { assertGitHubIdentifier, assertOneOf } from "../../helpers/validators";
+import { assertGitHubUsername, assertOneOf } from "../../helpers/validators";
 
 import type { GitHubSearchCommitsPayload } from "../../types/github";
 
@@ -23,7 +23,7 @@ const periodicityKeys = Object.keys(periodicityMap) as PeriodicityKey[];
 export default async function commitsPeriodicityUser(req: Request, res: Response): Promise<void> {
   const { user, periodicity, color, options } = getContext(req);
 
-  assertGitHubIdentifier(user, "user");
+  assertGitHubUsername(user);
   assertOneOf(periodicity, "periodicity", periodicityKeys);
 
   const periodStart = startOf(periodicityMap[periodicity]);

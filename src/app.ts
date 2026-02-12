@@ -11,10 +11,36 @@ interface AppDependencies {
   visitsStore?: VisitsStore;
 }
 
+function resolveTrustProxySetting(rawValue: string | undefined): boolean | number | string | string[] {
+  if (rawValue === undefined) {
+    return true;
+  }
+
+  let value = rawValue.trim();
+
+  if (value.includes(",")) {
+    value = value.split(",").at(0)?.trim() ?? "false";
+  }
+
+  if (value.length === 0 || value === "false") {
+    return false;
+  }
+
+  if (value === "true") {
+    return true;
+  }
+
+  if (/^\d+$/.test(value)) {
+    return Number.parseInt(value, 10);
+  }
+
+  return value;
+}
+
 export default function createApp({ visitsStore = createMongoVisitsStore() }: AppDependencies = {}): Express {
   const app = express();
 
-  app.set("trust proxy", true);
+  app.set("trust proxy", resolveTrustProxySetting(process.env.TRUST_PROXY));
   app.use(compression());
 
   app.use(createRouter({ visitsStore }));

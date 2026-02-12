@@ -4,7 +4,7 @@ import fetchGitHubJson from "../../helpers/fetchGitHubJson";
 import getContext from "../../helpers/getContext";
 import createHttpError from "../../helpers/httpError";
 import redirectBadge from "../../helpers/redirectBadge";
-import { assertGitHubIdentifier } from "../../helpers/validators";
+import { assertGitHubRepoName, assertGitHubUsername } from "../../helpers/validators";
 
 import type { GitHubRepoPayload } from "../../types/github";
 import type { HttpError } from "../../types/http";
@@ -22,8 +22,8 @@ export default function createVisitsUserRepoHandler({ visitsStore }: VisitsEndpo
   return async function visitsUserRepo(req: Request, res: Response): Promise<void> {
     const { user, repo, color, options } = getContext(req);
 
-    assertGitHubIdentifier(user, "user");
-    assertGitHubIdentifier(repo, "repo");
+    assertGitHubUsername(user);
+    assertGitHubRepoName(repo);
 
     let response: GitHubRepoPayload;
     try {

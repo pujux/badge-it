@@ -18,7 +18,6 @@ class MongoVisitsStore implements VisitsStore {
   constructor(client: MongoClient, collectionName = "repo-visits") {
     this.client = client;
     this.collectionName = collectionName;
-    this.ensureConnected();
   }
 
   private async ensureConnected(): Promise<void> {

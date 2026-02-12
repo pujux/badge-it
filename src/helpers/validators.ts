@@ -1,7 +1,9 @@
 import createHttpError from "./httpError";
 
-const githubIdentifierRegex = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37})$/;
+const githubUsernameRegex = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$/;
+const githubRepoNameRegex = /^[A-Za-z0-9._-]{1,100}$/;
 const colorRegex = /^[A-Za-z0-9_-]{1,30}$/;
+const integerStringRegex = /^-?\d+$/;
 
 interface ParseBoundedIntOptions {
   min: number;
@@ -9,9 +11,15 @@ interface ParseBoundedIntOptions {
   defaultValue: number;
 }
 
-export function assertGitHubIdentifier(value: string | undefined, fieldName: string): asserts value is string {
-  if (typeof value !== "string" || !githubIdentifierRegex.test(value)) {
-    throw createHttpError(400, `Invalid ${fieldName}`);
+export function assertGitHubUsername(value: string | undefined): asserts value is string {
+  if (typeof value !== "string" || !githubUsernameRegex.test(value)) {
+    throw createHttpError(400, "Invalid user parameter");
+  }
+}
+
+export function assertGitHubRepoName(value: string | undefined): asserts value is string {
+  if (typeof value !== "string" || !githubRepoNameRegex.test(value)) {
+    throw createHttpError(400, "Invalid repo parameter");
   }
 }
 
@@ -22,9 +30,16 @@ export function assertColor(value: string | undefined): asserts value is string 
 }
 
 export function parseBoundedInt(rawValue: string | undefined, fieldName: string, { min, max, defaultValue }: ParseBoundedIntOptions): number {
-  const value = Number.parseInt(rawValue ?? String(defaultValue), 10);
+  const sourceValue = rawValue ?? String(defaultValue);
+  const normalized = sourceValue.trim();
 
-  if (!Number.isFinite(value) || value < min || value > max) {
+  if (!integerStringRegex.test(normalized)) {
+    throw createHttpError(400, `Invalid ${fieldName}`);
+  }
+
+  const value = Number(normalized);
+
+  if (!Number.isInteger(value) || value < min || value > max) {
     throw createHttpError(400, `Invalid ${fieldName}`);
   }
 

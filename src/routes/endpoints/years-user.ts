@@ -4,14 +4,14 @@ import fetchGitHubJson from "../../helpers/fetchGitHubJson";
 import getContext from "../../helpers/getContext";
 import createHttpError from "../../helpers/httpError";
 import redirectBadge from "../../helpers/redirectBadge";
-import { assertGitHubIdentifier } from "../../helpers/validators";
+import { assertGitHubUsername } from "../../helpers/validators";
 
 import type { GitHubUserPayload } from "../../types/github";
 
 export default async function yearsUser(req: Request, res: Response): Promise<void> {
   const { user, color, options } = getContext(req);
 
-  assertGitHubIdentifier(user, "user");
+  assertGitHubUsername(user);
 
   const response = await fetchGitHubJson<GitHubUserPayload>(`/users/${user}`);
 

@@ -4,10 +4,7 @@ import { after, before, describe, test } from "node:test";
 
 import type { VisitsStore } from "../src/services/visitsStore";
 
-const ONE_PIXEL_PNG = Buffer.from(
-  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO8GfRkAAAAASUVORK5CYII=",
-  "base64"
-);
+const ONE_PIXEL_PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO8GfRkAAAAASUVORK5CYII=", "base64");
 
 function encodeBadgeSegment(value: number | string): string {
   return encodeURIComponent(String(value)).replace(/-/g, "--");
@@ -74,7 +71,7 @@ function createGitHubHandler(): (req: IncomingMessage, res: ServerResponse) => v
         200,
         Array.from({ length: 99 }, (_, index) => ({
           id: `g-${index}`,
-        }))
+        })),
       );
       return;
     }
@@ -91,6 +88,15 @@ function createGitHubHandler(): (req: IncomingMessage, res: ServerResponse) => v
     if (url.pathname === "/repos/testuser/testrepo") {
       json(res, 200, {
         id: 123,
+        created_at: "2021-01-01T00:00:00.000Z",
+        updated_at: "2025-01-01T00:00:00.000Z",
+      });
+      return;
+    }
+
+    if (url.pathname === "/repos/testuser/repo_name") {
+      json(res, 200, {
+        id: 124,
         created_at: "2021-01-01T00:00:00.000Z",
         updated_at: "2025-01-01T00:00:00.000Z",
       });
@@ -128,6 +134,11 @@ function createGitHubHandler(): (req: IncomingMessage, res: ServerResponse) => v
       return;
     }
 
+    if (url.pathname === "/repos/testuser/invalid-contributors/contributors") {
+      json(res, 200, [{ avatar_url: 123, html_url: null }]);
+      return;
+    }
+
     if (url.pathname === "/users/testuser/starred") {
       json(res, 200, [
         {
@@ -150,6 +161,11 @@ function createGitHubHandler(): (req: IncomingMessage, res: ServerResponse) => v
 
     if (url.pathname === "/users/emptystar/starred") {
       json(res, 200, []);
+      return;
+    }
+
+    if (url.pathname === "/users/invalid-stars/starred") {
+      json(res, 200, [{ full_name: "owner/bad" }]);
       return;
     }
 
@@ -312,6 +328,14 @@ describe("endpoint integration", () => {
     assertBadgeRedirect(result.location, { label: "Created", color: "brightgreen" });
   });
 
+  test("GET /created/:user/:repo accepts repository names with underscores", async () => {
+    const response = await request("/created/testuser/repo_name");
+    const result = await readResponse(response);
+
+    assert.equal(result.status, 302);
+    assertBadgeRedirect(result.location, { label: "Created", color: "brightgreen" });
+  });
+
   test("GET /updated/:user/:repo redirects to updated badge", async () => {
     const response = await request("/updated/testuser/testrepo");
     const result = await readResponse(response);
@@ -350,8 +374,16 @@ describe("endpoint integration", () => {
     assert.match(result.body, /height="1"/);
   });
 
+  test("GET /contributors/:user/:repo validates contributor payload shape", async () => {
+    const response = await request("/contributors/testuser/invalid-contributors");
+    const result = await readResponse(response);
+
+    assert.equal(result.status, 502);
+    assert.equal(result.body, "Upstream Service Error");
+  });
+
   test("GET /last-stars/:user returns SVG", async () => {
-    const response = await request("/last-stars/testuser?count=2&gap=10&perRow=1");
+    const response = await request("/last-stars/testuser?count=2&padding=10&perRow=1");
     const result = await readResponse(response);
 
     assert.equal(result.status, 200);
@@ -369,6 +401,22 @@ describe("endpoint integration", () => {
     assert.match(result.contentType, /image\/svg\+xml/);
     assert.match(result.body, /width="1"/);
     assert.match(result.body, /height="1"/);
+  });
+
+  test("GET /last-stars/:user validates starred repository payload shape", async () => {
+    const response = await request("/last-stars/invalid-stars");
+    const result = await readResponse(response);
+
+    assert.equal(result.status, 502);
+    assert.equal(result.body, "Upstream Service Error");
+  });
+
+  test("GET /last-stars/:user rejects partially numeric query values", async () => {
+    const response = await request("/last-stars/testuser?count=2abc");
+    const result = await readResponse(response);
+
+    assert.equal(result.status, 400);
+    assert.equal(result.body, "Invalid count");
   });
 
   test("GET /visits/:user/:repo returns not-found badge for missing repo", async () => {
@@ -409,7 +457,7 @@ describe("endpoint integration", () => {
     const result = await readResponse(response);
 
     assert.equal(result.status, 400);
-    assert.equal(result.body, "Invalid user");
+    assert.equal(result.body, "Invalid user parameter");
   });
 
   test("invalid upstream payload returns 502 with an explicit response", async () => {

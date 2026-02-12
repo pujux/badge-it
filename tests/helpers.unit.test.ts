@@ -5,6 +5,7 @@ import type { Request } from "express";
 
 import getContext from "../src/helpers/getContext";
 import startOf from "../src/helpers/startOf";
+import { assertGitHubRepoName, assertGitHubUsername, parseBoundedInt } from "../src/helpers/validators";
 
 function createRequest(originalUrl: string, params: Record<string, string> = {}): Request {
   return {
@@ -35,5 +36,26 @@ describe("getContext", () => {
 
     assert.equal(context.color, "red");
     assert.equal(context.options, "?style=flat&logo=github");
+  });
+});
+
+describe("validators", () => {
+  test("accepts valid usernames and repository names", () => {
+    assert.doesNotThrow(() => {
+      assertGitHubUsername("valid-user");
+      assertGitHubRepoName("repo_name.v2");
+    });
+  });
+
+  test("rejects invalid repository names", () => {
+    assert.throws(() => {
+      assertGitHubRepoName("repo/name");
+    });
+  });
+
+  test("parseBoundedInt rejects partially numeric values", () => {
+    assert.throws(() => {
+      parseBoundedInt("10px", "size", { min: 1, max: 100, defaultValue: 10 });
+    });
   });
 });
