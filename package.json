@@ -6,8 +6,7 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
-    "lint": "eslint .",
-    "deploy": "cd tools && env $(cat ../.env | xargs) ./deploy-helper.sh"
+    "lint": "eslint ."
   },
   "author": "Julian Pufler",
   "license": "ISC",

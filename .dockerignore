@@ -1,8 +1,5 @@
-node_modules/
-tools/
-
-.git/
-.env
-.eslintrc.js
-.gitignore
-Dockerfile
+# Keep Docker build context minimal.
+**
+!package.json
+!yarn.lock
+!src/**
