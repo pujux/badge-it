@@ -5,8 +5,8 @@ const redirectBadge = require("../../helpers/redirectBadge");
 const { assertGitHubIdentifier } = require("../../helpers/validators");
 const { MongoClient } = require("mongodb");
 
-let client;
-client = new MongoClient(process.env.DATABASE_URI ?? "mongodb://localhost:27017/badge-it", { useUnifiedTopology: true, useNewUrlParser: true });
+const client = new MongoClient(process.env.DATABASE_URI ?? "mongodb://localhost:27017/badge-it");
+
 client
   .connect()
   .then(() => console.info("Connected to MongoDB"))
@@ -42,9 +42,9 @@ module.exports = async (req, res) => {
     throw createHttpError(503, "Visit counter storage unavailable", error?.message);
   }
 
-  if (!data.ok || typeof data?.value?.counter !== "number") {
+  if (!data || typeof data.counter !== "number") {
     throw createHttpError(503, "Visit counter storage returned invalid response");
   }
 
-  redirectBadge(res, { label: "Visits", message: data.value.counter, color, options });
+  redirectBadge(res, { label: "Visits", message: data.counter, color, options });
 };

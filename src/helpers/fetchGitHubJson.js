@@ -1,4 +1,3 @@
-const fetch = require("node-fetch");
 const githubHeaders = require("./githubHeaders");
 const createHttpError = require("./httpError");
 
@@ -38,7 +37,7 @@ async function fetchGitHubJson(path, options = {}) {
   let payload;
   try {
     payload = await response.json();
-  } catch (error) {
+  } catch {
     throw createHttpError(502, `GitHub returned non-JSON content for ${path}`);
   }
 
