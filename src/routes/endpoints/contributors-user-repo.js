@@ -1,7 +1,7 @@
 const getContext = require("../../helpers/getContext");
-const fetch = require("node-fetch");
+const fetchGitHubJson = require("../../helpers/fetchGitHubJson");
 const generateContributorSvg = require("../../helpers/generateContributorSvg");
-const githubHeaders = require("../../helpers/githubHeaders");
+const createHttpError = require("../../helpers/httpError");
 
 module.exports = async (req, res) => {
   const { user, repo } = getContext(req);
@@ -13,11 +13,10 @@ module.exports = async (req, res) => {
   ];
 
   // Make a request to the GitHub API to get the repo's contributdata
-  let response = await fetch(`https://api.github.com/repos/${user}/${repo}/contributors`, { headers: githubHeaders() }).then((res) => res.json());
+  let response = await fetchGitHubJson(`/repos/${user}/${repo}/contributors`);
 
   if (!Array.isArray(response)) {
-    // ERROR
-    console.error(`ERR: ${JSON.stringify(response)} `);
+    throw createHttpError(502, "GitHub returned invalid contributors payload");
   }
 
   if (!bots) {

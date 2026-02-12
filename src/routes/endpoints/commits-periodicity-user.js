@@ -1,7 +1,7 @@
 const getContext = require("../../helpers/getContext");
-const fetch = require("node-fetch");
+const fetchGitHubJson = require("../../helpers/fetchGitHubJson");
 const startOf = require("../../helpers/startOf");
-const githubHeaders = require("../../helpers/githubHeaders");
+const createHttpError = require("../../helpers/httpError");
 
 const periodicityMap = {
   daily: "day",
@@ -15,12 +15,10 @@ module.exports = async (req, res) => {
   const { user, periodicity, color, options } = getContext(req);
 
   // Fetch commits from GitHub
-  const response = await fetch(`https://api.github.com/search/commits?q=author:${user}+author-date%3A>=${startOf(periodicityMap[periodicity])}`, {
-    headers: githubHeaders(),
-  }).then((res) => res.json());
+  const response = await fetchGitHubJson(`/search/commits?q=author:${user}+author-date%3A>=${startOf(periodicityMap[periodicity])}`);
 
-  if (!response?.total_count) {
-    console.error(`ERR: ${JSON.stringify(response)} `);
+  if (typeof response?.total_count !== "number") {
+    throw createHttpError(502, "GitHub returned invalid commit count payload");
   }
 
   const badgeText =

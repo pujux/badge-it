@@ -6,7 +6,14 @@ function errorHandler(err, req, res, next) {
   }
 
   const statusCode = Number.isInteger(err?.statusCode) ? err.statusCode : 500;
-  res.status(statusCode).send(statusCode >= 500 ? "Internal Server Error" : "Bad Request");
+  const statusMessageMap = {
+    500: "Internal Server Error",
+    502: "Upstream Service Error",
+    503: "Service Unavailable",
+    504: "Upstream Timeout",
+  };
+  const message = statusCode >= 500 ? statusMessageMap[statusCode] ?? statusMessageMap[500] : err?.message ?? "Request failed";
+  res.status(statusCode).send(message);
 }
 
 module.exports = errorHandler;

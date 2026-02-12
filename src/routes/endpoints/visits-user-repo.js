@@ -1,7 +1,7 @@
 const getContext = require("../../helpers/getContext");
-const fetch = require("node-fetch");
+const fetchGitHubJson = require("../../helpers/fetchGitHubJson");
+const createHttpError = require("../../helpers/httpError");
 const { MongoClient } = require("mongodb");
-const githubHeaders = require("../../helpers/githubHeaders");
 
 let client;
 client = new MongoClient(process.env.DATABASE_URI ?? "mongodb://localhost:27017/badge-it", { useUnifiedTopology: true, useNewUrlParser: true });
@@ -13,29 +13,34 @@ client
 module.exports = async (req, res) => {
   const { user, repo, color, options } = getContext(req);
 
-  // Make a request to the GitHub API to get the repo's data
-  const response = await fetch(`https://api.github.com/repos/${user}/${repo}`, { headers: githubHeaders() }).then((res) => res.json());
-
-  if (!response?.id) {
-    // ERROR
-    console.error(`ERR: ${JSON.stringify(response)} `);
+  let response;
+  try {
+    response = await fetchGitHubJson(`/repos/${user}/${repo}`);
+  } catch (error) {
+    if (error?.statusCode === 404) {
+      res.redirect(`https://img.shields.io/badge/Visits-Repo%20not%20found-${color}${options}`);
+      return;
+    }
+    throw error;
   }
 
+  if (!response?.id) {
+    throw createHttpError(502, "GitHub returned invalid repository payload");
+  }
+
+  let data;
   try {
-    // Increment the visit counter by 1
-    const data = await client
+    data = await client
       .db()
       .collection("repo-visits")
       .findOneAndUpdate({ user, repo }, { $inc: { counter: 1 } }, { returnDocument: "after", upsert: true });
-
-    if (!data.ok) {
-      // ERROR
-      console.error(`DB-ERR: ${JSON.stringify(data)}`);
-    }
-
-    res.redirect(`https://img.shields.io/badge/Visits-${data.value.counter}-${color}${options}`);
   } catch (error) {
-    // ERROR
-    res.status(500).send(error);
+    throw createHttpError(503, "Visit counter storage unavailable", error?.message);
   }
+
+  if (!data.ok || typeof data?.value?.counter !== "number") {
+    throw createHttpError(503, "Visit counter storage returned invalid response");
+  }
+
+  res.redirect(`https://img.shields.io/badge/Visits-${data.value.counter}-${color}${options}`);
 };
