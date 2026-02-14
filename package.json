@@ -17,13 +17,15 @@
     "compression": "^1.8.1",
     "express": "^5.2.1",
     "mongodb": "^7.1.0",
-    "pino": "^10.3.1"
+    "pino": "^10.3.1",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
     "@types/compression": "^1.8.1",
     "@types/express": "^5.0.3",
     "@types/node": "^24.4.0",
+    "@types/swagger-ui-express": "^4.1.8",
     "@typescript-eslint/eslint-plugin": "^8.43.0",
     "@typescript-eslint/parser": "^8.43.0",
     "dotenv": "^17.2.4",

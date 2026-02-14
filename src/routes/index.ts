@@ -1,5 +1,7 @@
 import express, { type NextFunction, type Request, type Response } from "express";
+import swaggerUi from "swagger-ui-express";
 
+import openApiDocument from "../docs/openapi";
 import asyncHandler from "../helpers/asyncHandler";
 import logger from "../helpers/logger";
 import commitsPeriodicityUser from "./endpoints/commits-periodicity-user";
@@ -13,10 +15,21 @@ import createVisitsUserRepoHandler from "./endpoints/visits-user-repo";
 import yearsUser from "./endpoints/years-user";
 
 import type { VisitsStore } from "../services/visitsStore";
+import { svgResponsePreviewPlugin } from "../docs/svgResponsePreviewPlugin";
 
 interface RouterDependencies {
   visitsStore: VisitsStore;
 }
+
+const swaggerUiOptions: swaggerUi.SwaggerUiOptions = {
+  customSiteTitle: "Badge-It API Docs",
+  swaggerOptions: {
+    plugins: [svgResponsePreviewPlugin],
+  },
+};
+
+const swaggerUiHtml = swaggerUi.generateHTML(openApiDocument, swaggerUiOptions).replace("<head>", '<head>\n  <base href="/docs/">');
+const swaggerUiAssets = swaggerUi.serveFiles(openApiDocument, swaggerUiOptions);
 
 export default function createRouter({ visitsStore }: RouterDependencies) {
   const router = express.Router();
@@ -34,16 +47,18 @@ export default function createRouter({ visitsStore }: RouterDependencies) {
           statusCode: res.statusCode,
           durationMs: Number(durationMs.toFixed(1)),
         },
-        "Request handled"
+        "Request handled",
       );
     });
 
     next();
   });
 
-  router.use("/health", (_req: Request, res: Response) => {
-    res.send("OK");
-  });
+  router.get("/health", (_req: Request, res: Response) => res.send("OK"));
+  router.get("/openapi.json", (_req: Request, res: Response) => res.json(openApiDocument));
+
+  router.get(/^\/docs\/?$/, (_req, res) => res.type("html").send(swaggerUiHtml));
+  router.use("/docs", swaggerUiAssets);
 
   router.get("/visits/:user/:repo", asyncHandler(createVisitsUserRepoHandler({ visitsStore })));
   router.get("/years/:user", asyncHandler(yearsUser));

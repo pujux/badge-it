@@ -284,6 +284,48 @@ describe("endpoint integration", () => {
     assert.equal(result.body, "OK");
   });
 
+  test("GET /openapi.json returns OpenAPI document", async () => {
+    const response = await request("/openapi.json");
+    const contentType = response.headers.get("content-type") || "";
+    const body = (await response.json()) as {
+      openapi?: string;
+      paths?: Record<string, { get?: { description?: string; responses?: Record<string, unknown> } }>;
+    };
+
+    assert.equal(response.status, 200);
+    assert.match(contentType, /application\/json/);
+    assert.equal(body.openapi, "3.1.0");
+    assert.ok(body.paths);
+    assert.ok(body.paths["/health"]);
+    assert.ok(body.paths["/visits/{user}/{repo}"]);
+
+    const yearsGet = body.paths["/years/{user}"]?.get;
+    assert.ok(yearsGet);
+    assert.ok(yearsGet.responses?.["302"]);
+    assert.ok(yearsGet.responses?.["200"]);
+    assert.match(yearsGet.description ?? "", /follow redirects/i);
+  });
+
+  test("GET /docs serves Swagger UI", async () => {
+    const response = await request("/docs");
+    const result = await readResponse(response);
+
+    assert.equal(result.status, 200);
+    assert.equal(result.location, null);
+    assert.match(result.contentType, /text\/html/);
+    assert.match(result.body, /id="swagger-ui"/);
+  });
+
+  test("GET /docs/swagger-ui-init.js includes SVG preview plugin without helper references", async () => {
+    const response = await request("/docs/swagger-ui-init.js");
+    const result = await readResponse(response);
+
+    assert.equal(result.status, 200);
+    assert.match(result.contentType, /application\/javascript/);
+    assert.match(result.body, /svgResponsePreviewPlugin/);
+    assert.doesNotMatch(result.body, /__name/);
+  });
+
   test("GET /years/:user redirects to shields badge", async () => {
     const response = await request("/years/testuser");
     const result = await readResponse(response);

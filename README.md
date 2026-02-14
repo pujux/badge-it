@@ -8,9 +8,20 @@
 
 ## Table of Contents
 
+- [API Docs](#api-docs)
 - [Usage](#available-badges-🔥)
 - [Ideas](#got-an-idea-for-a-badge-)
 - [License](#license)
+
+## API Docs
+
+Swagger UI and the OpenAPI document are available directly from the service:
+
+- `GET /docs` (Swagger UI)
+- `GET /docs/` (Swagger UI)
+- `GET /openapi.json` (OpenAPI 3.1 JSON)
+
+Note: badge endpoints are implemented as `302` redirects to `img.shields.io`. In Swagger UI, "Try it out" typically shows the followed downstream `200 image/svg+xml` response when the redirect target succeeds.
 
 ## Available badges 🔥
 
