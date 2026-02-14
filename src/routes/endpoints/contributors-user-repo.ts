@@ -8,8 +8,27 @@ import { assertGitHubRepoName, assertGitHubUsername, parseBoundedInt } from "../
 
 import type { GitHubContributor } from "../../types/github";
 
+const DEFAULT_MAX_RENDERED_CONTRIBUTORS = 60;
+const MAX_RENDERED_CONTRIBUTORS = 100;
+
 function queryString(value: unknown): string | undefined {
   return typeof value === "string" ? value : undefined;
+}
+
+function resolveMaxRenderedContributors(): number {
+  const rawValue = process.env.MAX_RENDERED_CONTRIBUTORS;
+
+  if (!rawValue) {
+    return DEFAULT_MAX_RENDERED_CONTRIBUTORS;
+  }
+
+  const parsedValue = Number.parseInt(rawValue, 10);
+
+  if (!Number.isInteger(parsedValue) || parsedValue < 1) {
+    return DEFAULT_MAX_RENDERED_CONTRIBUTORS;
+  }
+
+  return Math.min(parsedValue, MAX_RENDERED_CONTRIBUTORS);
 }
 
 function isGitHubContributor(value: unknown): value is GitHubContributor {
@@ -40,8 +59,9 @@ export default async function contributorsUserRepo(req: Request, res: Response):
     throw createHttpError(400, "Invalid bots parameter");
   }
 
+  const maxRenderedContributors = resolveMaxRenderedContributors();
   const includeBots = botsQuery !== "false";
-  const response = await fetchGitHubJson<unknown>(`/repos/${user}/${repo}/contributors`);
+  const response = await fetchGitHubJson<unknown>(`/repos/${user}/${repo}/contributors?per_page=${maxRenderedContributors}`);
 
   if (!Array.isArray(response) || !response.every(isGitHubContributor)) {
     throw createHttpError(502, "GitHub returned invalid contributors payload");
@@ -49,7 +69,8 @@ export default async function contributorsUserRepo(req: Request, res: Response):
 
   const contributors = response;
   const filteredContributors = includeBots ? contributors : contributors.filter((contributor) => contributor.type === "User");
-  const svg = await generateContributorSvg(filteredContributors, size, padding, perRow);
+  const cappedContributors = filteredContributors.slice(0, maxRenderedContributors);
+  const svg = await generateContributorSvg(cappedContributors, size, padding, perRow);
 
   res.contentType("image/svg+xml").send(svg);
 }

@@ -1,5 +1,11 @@
 const redirectFollowNote =
   "This endpoint returns a 302 redirect to img.shields.io. Clients that automatically follow redirects (including Swagger UI in-browser requests) will show a 200 image/svg+xml response when the downstream badge request succeeds.";
+const rateLimitNote = "Requests are rate-limited service-wide per source IP and can return 429 when the current window is exceeded.";
+const docsCacheNote = "Cache-Control: public, max-age=300, s-maxage=300.";
+const badgeCacheNote = "Cache-Control: public, max-age=0, s-maxage=300, stale-while-revalidate=600.";
+const visitsCacheNote = "Cache-Control: no-store (visit counters should not be cached).";
+const commitsCacheNote = "Cache-Control: public, max-age=0, s-maxage=120, stale-while-revalidate=300.";
+const svgCacheNote = "Cache-Control: public, max-age=0, s-maxage=300, stale-while-revalidate=600.";
 
 const openApiDocument = {
   openapi: "3.1.0",
@@ -7,7 +13,7 @@ const openApiDocument = {
     title: "Badge-It API",
     version: "0.0.1",
     description:
-      "Badge-It generates GitHub-focused badges and SVG displays. Most endpoints redirect to a shields.io badge URL, while selected endpoints return SVG content directly.",
+      "Badge-It generates GitHub-focused badges and SVG displays. Most endpoints redirect to a shields.io badge URL, while selected endpoints return SVG content directly. Endpoints use response caching headers and a service-wide in-memory IP rate limiter.",
   },
   servers: [{ url: "/", description: "Current host" }],
   externalDocs: {
@@ -43,6 +49,7 @@ const openApiDocument = {
         tags: ["System"],
         operationId: "getOpenApiDocument",
         summary: "OpenAPI document",
+        description: `${docsCacheNote} ${rateLimitNote}`,
         responses: {
           200: {
             description: "OpenAPI specification for this service",
@@ -55,6 +62,7 @@ const openApiDocument = {
               },
             },
           },
+          429: { $ref: "#/components/responses/TooManyRequestsResponse" },
         },
       },
     },
@@ -63,6 +71,7 @@ const openApiDocument = {
         tags: ["System"],
         operationId: "getDocsUi",
         summary: "Swagger UI HTML",
+        description: `${docsCacheNote} ${rateLimitNote}`,
         responses: {
           200: {
             description: "Swagger UI page",
@@ -72,6 +81,7 @@ const openApiDocument = {
               },
             },
           },
+          429: { $ref: "#/components/responses/TooManyRequestsResponse" },
         },
       },
     },
@@ -80,7 +90,7 @@ const openApiDocument = {
         tags: ["Badges"],
         operationId: "getVisitsBadge",
         summary: "Visits badge",
-        description: `Redirects to a shields.io badge showing visit count for a repository. ${redirectFollowNote}`,
+        description: `Redirects to a shields.io badge showing visit count for a repository. ${redirectFollowNote} ${visitsCacheNote} ${rateLimitNote}`,
         parameters: [
           { $ref: "#/components/parameters/UserParam" },
           { $ref: "#/components/parameters/RepoParam" },
@@ -89,6 +99,7 @@ const openApiDocument = {
         responses: {
           200: { $ref: "#/components/responses/FollowedBadgeSvgResponse" },
           302: { $ref: "#/components/responses/BadgeRedirectResponse" },
+          429: { $ref: "#/components/responses/TooManyRequestsResponse" },
           400: { $ref: "#/components/responses/BadRequestResponse" },
           502: { $ref: "#/components/responses/UpstreamErrorResponse" },
           503: { $ref: "#/components/responses/ServiceUnavailableResponse" },
@@ -101,11 +112,12 @@ const openApiDocument = {
         operationId: "getYearsBadge",
         summary: "Years badge",
         description:
-          `Redirects to a shields.io badge showing how many full years a user has been on GitHub. Additional query parameters are forwarded to shields.io. ${redirectFollowNote}`,
+          `Redirects to a shields.io badge showing how many full years a user has been on GitHub. Additional query parameters are forwarded to shields.io. ${redirectFollowNote} ${badgeCacheNote} ${rateLimitNote}`,
         parameters: [{ $ref: "#/components/parameters/UserParam" }, { $ref: "#/components/parameters/ColorQueryParam" }],
         responses: {
           200: { $ref: "#/components/responses/FollowedBadgeSvgResponse" },
           302: { $ref: "#/components/responses/BadgeRedirectResponse" },
+          429: { $ref: "#/components/responses/TooManyRequestsResponse" },
           400: { $ref: "#/components/responses/BadRequestResponse" },
           502: { $ref: "#/components/responses/UpstreamErrorResponse" },
         },
@@ -117,11 +129,12 @@ const openApiDocument = {
         operationId: "getReposBadge",
         summary: "Repositories badge",
         description:
-          `Redirects to a shields.io badge showing a user's public repository count. Additional query parameters are forwarded to shields.io. ${redirectFollowNote}`,
+          `Redirects to a shields.io badge showing a user's public repository count. Additional query parameters are forwarded to shields.io. ${redirectFollowNote} ${badgeCacheNote} ${rateLimitNote}`,
         parameters: [{ $ref: "#/components/parameters/UserParam" }, { $ref: "#/components/parameters/ColorQueryParam" }],
         responses: {
           200: { $ref: "#/components/responses/FollowedBadgeSvgResponse" },
           302: { $ref: "#/components/responses/BadgeRedirectResponse" },
+          429: { $ref: "#/components/responses/TooManyRequestsResponse" },
           400: { $ref: "#/components/responses/BadRequestResponse" },
           502: { $ref: "#/components/responses/UpstreamErrorResponse" },
         },
@@ -132,11 +145,13 @@ const openApiDocument = {
         tags: ["Badges"],
         operationId: "getGistsBadge",
         summary: "Gists badge",
-        description: `Redirects to a shields.io badge showing a user's public gist count. Additional query parameters are forwarded to shields.io. ${redirectFollowNote}`,
+        description:
+          `Redirects to a shields.io badge showing a user's public gist count. Additional query parameters are forwarded to shields.io. ${redirectFollowNote} ${badgeCacheNote} ${rateLimitNote}`,
         parameters: [{ $ref: "#/components/parameters/UserParam" }, { $ref: "#/components/parameters/ColorQueryParam" }],
         responses: {
           200: { $ref: "#/components/responses/FollowedBadgeSvgResponse" },
           302: { $ref: "#/components/responses/BadgeRedirectResponse" },
+          429: { $ref: "#/components/responses/TooManyRequestsResponse" },
           400: { $ref: "#/components/responses/BadRequestResponse" },
           502: { $ref: "#/components/responses/UpstreamErrorResponse" },
         },
@@ -148,7 +163,7 @@ const openApiDocument = {
         operationId: "getUpdatedBadge",
         summary: "Updated badge",
         description:
-          `Redirects to a shields.io badge showing when the repository was updated. Additional query parameters are forwarded to shields.io. ${redirectFollowNote}`,
+          `Redirects to a shields.io badge showing when the repository was updated. Additional query parameters are forwarded to shields.io. ${redirectFollowNote} ${badgeCacheNote} ${rateLimitNote}`,
         parameters: [
           { $ref: "#/components/parameters/UserParam" },
           { $ref: "#/components/parameters/RepoParam" },
@@ -157,6 +172,7 @@ const openApiDocument = {
         responses: {
           200: { $ref: "#/components/responses/FollowedBadgeSvgResponse" },
           302: { $ref: "#/components/responses/BadgeRedirectResponse" },
+          429: { $ref: "#/components/responses/TooManyRequestsResponse" },
           400: { $ref: "#/components/responses/BadRequestResponse" },
           502: { $ref: "#/components/responses/UpstreamErrorResponse" },
         },
@@ -168,7 +184,7 @@ const openApiDocument = {
         operationId: "getCreatedBadge",
         summary: "Created badge",
         description:
-          `Redirects to a shields.io badge showing when the repository was created. Additional query parameters are forwarded to shields.io. ${redirectFollowNote}`,
+          `Redirects to a shields.io badge showing when the repository was created. Additional query parameters are forwarded to shields.io. ${redirectFollowNote} ${badgeCacheNote} ${rateLimitNote}`,
         parameters: [
           { $ref: "#/components/parameters/UserParam" },
           { $ref: "#/components/parameters/RepoParam" },
@@ -177,6 +193,7 @@ const openApiDocument = {
         responses: {
           200: { $ref: "#/components/responses/FollowedBadgeSvgResponse" },
           302: { $ref: "#/components/responses/BadgeRedirectResponse" },
+          429: { $ref: "#/components/responses/TooManyRequestsResponse" },
           400: { $ref: "#/components/responses/BadRequestResponse" },
           502: { $ref: "#/components/responses/UpstreamErrorResponse" },
         },
@@ -188,7 +205,7 @@ const openApiDocument = {
         operationId: "getCommitsBadge",
         summary: "Commits badge",
         description:
-          `Redirects to a shields.io badge showing commit count in the selected period. Additional query parameters are forwarded to shields.io. ${redirectFollowNote}`,
+          `Redirects to a shields.io badge showing commit count in the selected period. Additional query parameters are forwarded to shields.io. ${redirectFollowNote} ${commitsCacheNote} ${rateLimitNote}`,
         parameters: [
           { $ref: "#/components/parameters/PeriodicityParam" },
           { $ref: "#/components/parameters/UserParam" },
@@ -197,6 +214,7 @@ const openApiDocument = {
         responses: {
           200: { $ref: "#/components/responses/FollowedBadgeSvgResponse" },
           302: { $ref: "#/components/responses/BadgeRedirectResponse" },
+          429: { $ref: "#/components/responses/TooManyRequestsResponse" },
           400: { $ref: "#/components/responses/BadRequestResponse" },
           502: { $ref: "#/components/responses/UpstreamErrorResponse" },
         },
@@ -207,6 +225,7 @@ const openApiDocument = {
         tags: ["SVG"],
         operationId: "getContributorsSvg",
         summary: "Contributors display SVG",
+        description: `Returns an SVG contributor grid. Response size is bounded and contributors are capped per request. ${svgCacheNote} ${rateLimitNote}`,
         parameters: [
           { $ref: "#/components/parameters/UserParam" },
           { $ref: "#/components/parameters/RepoParam" },
@@ -218,12 +237,19 @@ const openApiDocument = {
         responses: {
           200: {
             description: "SVG contributor grid",
+            headers: {
+              "Cache-Control": {
+                description: svgCacheNote,
+                schema: { type: "string" },
+              },
+            },
             content: {
               "image/svg+xml": {
                 schema: { type: "string" },
               },
             },
           },
+          429: { $ref: "#/components/responses/TooManyRequestsResponse" },
           400: { $ref: "#/components/responses/BadRequestResponse" },
           502: { $ref: "#/components/responses/UpstreamErrorResponse" },
         },
@@ -234,6 +260,7 @@ const openApiDocument = {
         tags: ["SVG"],
         operationId: "getLastStarsSvg",
         summary: "Last stars display SVG",
+        description: `Returns an SVG with the most recent starred repositories. ${svgCacheNote} ${rateLimitNote}`,
         parameters: [
           { $ref: "#/components/parameters/UserParam" },
           { $ref: "#/components/parameters/CountQueryParam" },
@@ -243,12 +270,19 @@ const openApiDocument = {
         responses: {
           200: {
             description: "SVG recent stars grid",
+            headers: {
+              "Cache-Control": {
+                description: svgCacheNote,
+                schema: { type: "string" },
+              },
+            },
             content: {
               "image/svg+xml": {
                 schema: { type: "string" },
               },
             },
           },
+          429: { $ref: "#/components/responses/TooManyRequestsResponse" },
           400: { $ref: "#/components/responses/BadRequestResponse" },
           502: { $ref: "#/components/responses/UpstreamErrorResponse" },
         },
@@ -411,6 +445,13 @@ const openApiDocument = {
       BadgeRedirectResponse: {
         description: "Direct server response: redirect to generated shields.io badge URL",
         headers: {
+          "Cache-Control": {
+            description:
+              "Caching policy for this redirect response. Most badge redirects use shared-cache TTLs; visits uses no-store to avoid cached counter increments.",
+            schema: {
+              type: "string",
+            },
+          },
           Location: {
             description: "Destination badge URL",
             schema: {
@@ -441,6 +482,22 @@ const openApiDocument = {
         content: {
           "text/plain": {
             schema: { type: "string", default: "Service Unavailable" },
+          },
+        },
+      },
+      TooManyRequestsResponse: {
+        description: "Rate limit exceeded",
+        headers: {
+          "Retry-After": {
+            description: "Seconds until next allowed request in the current window.",
+            schema: {
+              type: "integer",
+            },
+          },
+        },
+        content: {
+          "text/plain": {
+            schema: { type: "string", default: "Too Many Requests" },
           },
         },
       },

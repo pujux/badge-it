@@ -14,6 +14,7 @@ class MongoVisitsStore implements VisitsStore {
   private readonly client: MongoClient;
   private readonly collectionName: string;
   private connectionPromise: Promise<void> | null = null;
+  private indexPromise: Promise<void> | null = null;
 
   constructor(client: MongoClient, collectionName = "repo-visits") {
     this.client = client;
@@ -37,8 +38,28 @@ class MongoVisitsStore implements VisitsStore {
     await this.connectionPromise;
   }
 
+  private async ensureIndexes(): Promise<void> {
+    if (!this.indexPromise) {
+      this.indexPromise = this.client
+        .db()
+        .collection<RepoVisitDocument>(this.collectionName)
+        .createIndex({ user: 1, repo: 1 }, { unique: true, name: "user_repo_unique" })
+        .then(() => {
+          logger.info({ component: "mongodb", collection: this.collectionName }, "Ensured visit counter indexes");
+        })
+        .catch((error: unknown) => {
+          logger.error({ err: error, component: "mongodb", collection: this.collectionName }, "Failed to ensure visit counter indexes");
+          this.indexPromise = null;
+          throw error;
+        });
+    }
+
+    await this.indexPromise;
+  }
+
   async increment(user: string, repo: string): Promise<number> {
     await this.ensureConnected();
+    await this.ensureIndexes();
 
     const collection = this.client.db().collection<RepoVisitDocument>(this.collectionName);
     const updated = (await collection.findOneAndUpdate(
@@ -63,6 +84,7 @@ class MongoVisitsStore implements VisitsStore {
       throw error;
     } finally {
       this.connectionPromise = null;
+      this.indexPromise = null;
     }
   }
 }

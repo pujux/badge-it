@@ -5,6 +5,7 @@ import { after, before, describe, test } from "node:test";
 import type { VisitsStore } from "../src/services/visitsStore";
 
 const ONE_PIXEL_PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO8GfRkAAAAASUVORK5CYII=", "base64");
+const LARGE_PNG = Buffer.alloc(2_048, 1);
 
 function encodeBadgeSegment(value: number | string): string {
   return encodeURIComponent(String(value)).replace(/-/g, "--");
@@ -129,6 +130,39 @@ function createGitHubHandler(): (req: IncomingMessage, res: ServerResponse) => v
       return;
     }
 
+    if (url.pathname === "/repos/testuser/rate-limit/contributors") {
+      json(res, 200, [
+        {
+          type: "User",
+          avatar_url: `${origin}/avatars/user.png`,
+          html_url: "https://github.com/testuser",
+        },
+      ]);
+      return;
+    }
+
+    if (url.pathname === "/repos/testuser/unsafe/contributors") {
+      json(res, 200, [
+        {
+          type: "User",
+          avatar_url: `${origin}/avatars/user.png`,
+          html_url: 'javascript:alert("bad")',
+        },
+      ]);
+      return;
+    }
+
+    if (url.pathname === "/repos/testuser/large-avatar/contributors") {
+      json(res, 200, [
+        {
+          type: "User",
+          avatar_url: `${origin}/avatars/large.png`,
+          html_url: "https://github.com/testuser",
+        },
+      ]);
+      return;
+    }
+
     if (url.pathname === "/repos/testuser/empty/contributors") {
       json(res, 200, []);
       return;
@@ -169,6 +203,19 @@ function createGitHubHandler(): (req: IncomingMessage, res: ServerResponse) => v
       return;
     }
 
+    if (url.pathname === "/users/unsafe-stars/starred") {
+      json(res, 200, [
+        {
+          full_name: 'owner/<script>alert("x")</script>',
+          html_url: 'javascript:alert("bad")',
+          stargazers_count: 42,
+          updated_at: "2025-01-03T00:00:00.000Z",
+          language: '"><script>alert("x")</script>',
+        },
+      ]);
+      return;
+    }
+
     if (url.pathname === "/search/commits") {
       json(res, 200, { total_count: 17 });
       return;
@@ -177,6 +224,15 @@ function createGitHubHandler(): (req: IncomingMessage, res: ServerResponse) => v
     if (url.pathname === "/avatars/user.png" || url.pathname === "/avatars/bot.png") {
       res.writeHead(200, { "content-type": "image/png" });
       res.end(ONE_PIXEL_PNG);
+      return;
+    }
+
+    if (url.pathname === "/avatars/large.png") {
+      res.writeHead(200, {
+        "content-type": "image/png",
+        "content-length": String(LARGE_PNG.byteLength),
+      });
+      res.end(LARGE_PNG);
       return;
     }
 
@@ -211,6 +267,9 @@ describe("endpoint integration", () => {
   let originalGitHubBaseUrl: string | undefined;
   let originalAccessToken: string | undefined;
   let originalLogLevel: string | undefined;
+  let requestIpCounter = 0;
+  const managedEnvKeys = ["RATE_LIMIT_WINDOW_MS", "RATE_LIMIT_MAX", "RATE_LIMIT_MAX_ENTRIES", "MAX_IMAGE_BYTES"] as const;
+  const originalManagedEnv: Partial<Record<(typeof managedEnvKeys)[number], string | undefined>> = {};
 
   before(async () => {
     githubServer = await startServer(createGitHubHandler());
@@ -219,10 +278,17 @@ describe("endpoint integration", () => {
     originalGitHubBaseUrl = process.env.GITHUB_API_BASE_URL;
     originalAccessToken = process.env.GITHUB_ACCESS_TOKEN;
     originalLogLevel = process.env.LOG_LEVEL;
+    for (const key of managedEnvKeys) {
+      originalManagedEnv[key] = process.env[key];
+    }
 
     process.env.GITHUB_API_BASE_URL = serverOrigin(githubServer);
     process.env.GITHUB_ACCESS_TOKEN = "";
     process.env.LOG_LEVEL = "silent";
+    process.env.RATE_LIMIT_WINDOW_MS = "60000";
+    process.env.RATE_LIMIT_MAX = "1";
+    process.env.RATE_LIMIT_MAX_ENTRIES = "20000";
+    process.env.MAX_IMAGE_BYTES = "1024";
 
     const { default: createApp } = await import("../src/app");
     const app = createApp({ visitsStore });
@@ -252,10 +318,32 @@ describe("endpoint integration", () => {
     } else {
       process.env.LOG_LEVEL = originalLogLevel;
     }
+
+    for (const key of managedEnvKeys) {
+      const originalValue = originalManagedEnv[key];
+
+      if (originalValue === undefined) {
+        delete process.env[key];
+      } else {
+        process.env[key] = originalValue;
+      }
+    }
   });
 
-  async function request(pathname: string): Promise<Response> {
-    return fetch(`${appOrigin}${pathname}`, { redirect: "manual" });
+  function nextForwardedFor(): string {
+    requestIpCounter += 1;
+    const octet = ((requestIpCounter - 1) % 250) + 1;
+
+    return `198.51.100.${octet}`;
+  }
+
+  async function request(pathname: string, options: { forwardedFor?: string } = {}): Promise<Response> {
+    const forwardedFor = options.forwardedFor ?? nextForwardedFor();
+
+    return fetch(`${appOrigin}${pathname}`, {
+      redirect: "manual",
+      headers: { "x-forwarded-for": forwardedFor },
+    });
   }
 
   async function readResponse(response: Response): Promise<{ status: number; location: string | null; contentType: string; body: string }> {
@@ -284,6 +372,19 @@ describe("endpoint integration", () => {
     assert.equal(result.body, "OK");
   });
 
+  test("responses include security hardening headers", async () => {
+    const response = await request("/health");
+
+    assert.equal(response.headers.get("x-content-type-options"), "nosniff");
+    assert.equal(response.headers.get("x-frame-options"), "DENY");
+    assert.equal(response.headers.get("referrer-policy"), "no-referrer");
+    assert.equal(response.headers.get("x-dns-prefetch-control"), "off");
+    assert.equal(response.headers.get("x-download-options"), "noopen");
+    assert.equal(response.headers.get("x-permitted-cross-domain-policies"), "none");
+    assert.equal(response.headers.get("x-xss-protection"), "0");
+    assert.equal(response.headers.get("x-powered-by"), null);
+  });
+
   test("GET /openapi.json returns OpenAPI document", async () => {
     const response = await request("/openapi.json");
     const contentType = response.headers.get("content-type") || "";
@@ -303,6 +404,7 @@ describe("endpoint integration", () => {
     assert.ok(yearsGet);
     assert.ok(yearsGet.responses?.["302"]);
     assert.ok(yearsGet.responses?.["200"]);
+    assert.ok(yearsGet.responses?.["429"]);
     assert.match(yearsGet.description ?? "", /follow redirects/i);
   });
 
@@ -341,6 +443,14 @@ describe("endpoint integration", () => {
     assert.equal(result.status, 302);
     assertBadgeRedirect(result.location, { label: "Repos", color: "brightgreen" });
     assert.match(result.location, /-42-brightgreen/);
+    assert.match(response.headers.get("cache-control") ?? "", /s-maxage=300/);
+  });
+
+  test("GET /visits/:user/:repo uses no-store cache policy", async () => {
+    const response = await request("/visits/testuser/testrepo");
+
+    assert.equal(response.status, 302);
+    assert.equal(response.headers.get("cache-control"), "no-store");
   });
 
   test("GET /repos/:user with only color query has clean options", async () => {
@@ -404,6 +514,17 @@ describe("endpoint integration", () => {
     assert.match(result.body, /<svg/);
     assert.match(result.body, /github\.com\/testuser/);
     assert.doesNotMatch(result.body, /apps\/bot-user/);
+    assert.match(response.headers.get("cache-control") ?? "", /s-maxage=300/);
+  });
+
+  test("GET /contributors/:user/:repo rate limits repeated requests", async () => {
+    const forwardedFor = "203.0.113.10";
+    const first = await request("/contributors/testuser/rate-limit", { forwardedFor });
+    const second = await request("/contributors/testuser/rate-limit", { forwardedFor });
+
+    assert.equal(first.status, 200);
+    assert.equal(second.status, 429);
+    assert.match(second.headers.get("retry-after") ?? "", /^\d+$/);
   });
 
   test("GET /contributors/:user/:repo handles empty contributor lists", async () => {
@@ -418,6 +539,23 @@ describe("endpoint integration", () => {
 
   test("GET /contributors/:user/:repo validates contributor payload shape", async () => {
     const response = await request("/contributors/testuser/invalid-contributors");
+    const result = await readResponse(response);
+
+    assert.equal(result.status, 502);
+    assert.equal(result.body, "Upstream Service Error");
+  });
+
+  test("GET /contributors/:user/:repo sanitizes unsafe contributor links", async () => {
+    const response = await request("/contributors/testuser/unsafe");
+    const result = await readResponse(response);
+
+    assert.equal(result.status, 200);
+    assert.match(result.body, /xlink:href="https:\/\/github\.com\//);
+    assert.doesNotMatch(result.body, /javascript:/);
+  });
+
+  test("GET /contributors/:user/:repo rejects oversized avatar responses", async () => {
+    const response = await request("/contributors/testuser/large-avatar");
     const result = await readResponse(response);
 
     assert.equal(result.status, 502);
@@ -453,6 +591,17 @@ describe("endpoint integration", () => {
     assert.equal(result.body, "Upstream Service Error");
   });
 
+  test("GET /last-stars/:user sanitizes unsafe SVG content", async () => {
+    const response = await request("/last-stars/unsafe-stars?count=1");
+    const result = await readResponse(response);
+
+    assert.equal(result.status, 200);
+    assert.match(result.body, /&lt;script&gt;alert\(&quot;x&quot;\)&lt;/);
+    assert.match(result.body, /xlink:href="https:\/\/github\.com\//);
+    assert.doesNotMatch(result.body, /javascript:/);
+    assert.doesNotMatch(result.body, /<script>/);
+  });
+
   test("GET /last-stars/:user rejects partially numeric query values", async () => {
     const response = await request("/last-stars/testuser?count=2abc");
     const result = await readResponse(response);
@@ -471,14 +620,14 @@ describe("endpoint integration", () => {
   });
 
   test("GET /visits/:user/:repo increments counter and redirects", async () => {
-    const firstResponse = await request("/visits/testuser/testrepo");
+    const firstResponse = await request("/visits/testuser/repo_name");
     const firstResult = await readResponse(firstResponse);
 
     assert.equal(firstResult.status, 302);
     assertBadgeRedirect(firstResult.location, { label: "Visits", color: "brightgreen" });
     assert.match(firstResult.location, /-1-brightgreen/);
 
-    const secondResponse = await request("/visits/testuser/testrepo");
+    const secondResponse = await request("/visits/testuser/repo_name");
     const secondResult = await readResponse(secondResponse);
 
     assert.equal(secondResult.status, 302);

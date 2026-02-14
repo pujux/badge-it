@@ -1,5 +1,6 @@
 import compression from "compression";
 import express, { type Express, type Request, type Response } from "express";
+import helmet from "helmet";
 
 import errorHandler from "./middleware/errorHandler";
 import createRouter from "./routes";
@@ -41,6 +42,13 @@ export default function createApp({ visitsStore = createMongoVisitsStore() }: Ap
   const app = express();
 
   app.set("trust proxy", resolveTrustProxySetting(process.env.TRUST_PROXY));
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+      crossOriginResourcePolicy: { policy: "cross-origin" },
+      xFrameOptions: { action: "deny" },
+    }),
+  );
   app.use(compression());
 
   app.use(createRouter({ visitsStore }));

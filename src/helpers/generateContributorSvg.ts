@@ -1,4 +1,5 @@
 import imageToBase64 from "./imageToBase64";
+import { escapeXml, sanitizeGitHubUrl } from "./sanitizeSvg";
 
 import type { GitHubContributor } from "../types/github";
 
@@ -74,10 +75,13 @@ export default async function generateContributorSvg(
 
   const avatars = contributorsWithAvatars
     .map(
-      (contributor, i) =>
-        `<a xlink:href="${contributor.html_url}"><image clip-path="url(#c-${i})" width="${size}" height="${size}" x="${
+      (contributor, i) => {
+        const contributorUrl = escapeXml(sanitizeGitHubUrl(contributor.html_url));
+
+        return `<a xlink:href="${contributorUrl}"><image clip-path="url(#c-${i})" width="${size}" height="${size}" x="${
           (i % perRow) * (size + padding)
-        }" y="${Math.floor(i / perRow) * (size + padding)}" xlink:href="data:image/png;base64,${contributor.avatar}" /></a>`,
+        }" y="${Math.floor(i / perRow) * (size + padding)}" xlink:href="data:image/png;base64,${contributor.avatar}" /></a>`;
+      },
     )
     .join(" ");
 

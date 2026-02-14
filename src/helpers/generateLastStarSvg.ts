@@ -1,4 +1,5 @@
 import type { GitHubStarredRepo } from "../types/github";
+import { escapeXml, sanitizeGitHubUrl } from "./sanitizeSvg";
 
 export default function generateLastStarSvg(response: GitHubStarredRepo[], padding: number, perRow: number): string {
   if (response.length === 0) {
@@ -14,11 +15,15 @@ export default function generateLastStarSvg(response: GitHubStarredRepo[], paddi
     .map((repo, i) => {
       const x = (i % perRow) * (width + padding) + wrapperPadding;
       const y = Math.floor(i / perRow) * (height + padding) + wrapperPadding;
-      return `<a xlink:href="${repo.html_url}">
+      const repoUrl = escapeXml(sanitizeGitHubUrl(repo.html_url));
+      const repoName = repo.full_name.length >= 30 ? `${repo.full_name.substring(0, 27)}...` : repo.full_name;
+      const safeRepoName = escapeXml(repoName);
+      const safeUpdatedDate = escapeXml(new Date(repo.updated_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }));
+      const safeLanguage = repo.language ? escapeXml(repo.language) : "";
+
+      return `<a xlink:href="${repoUrl}">
         <rect width="${width}" height="${height}" style="filter: url(#shadow)" x="${x}" y="${y}" stroke-width="1.5" fill="rgb(255,255,255)" stroke="rgb(208,215,222)" rx="${cornerRadius}"></rect>
-        <text class="bold-text" x="${x + wrapperPadding}" y="${y + wrapperPadding + 16}">${
-          repo.full_name.length >= 30 ? `${repo.full_name.substring(0, 27)}...` : repo.full_name
-        }</text>
+        <text class="bold-text" x="${x + wrapperPadding}" y="${y + wrapperPadding + 16}">${safeRepoName}</text>
 
         <svg x="${x + wrapperPadding}" y="${
           y + height - wrapperPadding - 12
@@ -29,13 +34,11 @@ export default function generateLastStarSvg(response: GitHubStarredRepo[], paddi
           repo.stargazers_count > 999 ? `${(repo.stargazers_count / 1e3).toFixed(1)}k` : repo.stargazers_count
         }</text>
 
-        <text class="text" text-anchor="middle" x="${x + width / 2 - 15}" y="${y + height - wrapperPadding}">Updated ${new Date(
-          repo.updated_at,
-        ).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</text>
+        <text class="text" text-anchor="middle" x="${x + width / 2 - 15}" y="${y + height - wrapperPadding}">Updated ${safeUpdatedDate}</text>
 
         ${
           repo.language
-            ? `<text class="text" text-anchor="end" x="${x + width - wrapperPadding}" y="${y + height - wrapperPadding}">${repo.language}</text>`
+            ? `<text class="text" text-anchor="end" x="${x + width - wrapperPadding}" y="${y + height - wrapperPadding}">${safeLanguage}</text>`
             : ""
         }
       </a>`;

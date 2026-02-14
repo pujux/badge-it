@@ -9,6 +9,7 @@
 ## Table of Contents
 
 - [API Docs](#api-docs)
+- [Caching & Rate Limits](#caching--rate-limits)
 - [Usage](#available-badges-🔥)
 - [Ideas](#got-an-idea-for-a-badge-)
 - [License](#license)
@@ -22,6 +23,18 @@ Swagger UI and the OpenAPI document are available directly from the service:
 - `GET /openapi.json` (OpenAPI 3.1 JSON)
 
 Note: badge endpoints are implemented as `302` redirects to `img.shields.io`. In Swagger UI, "Try it out" typically shows the followed downstream `200 image/svg+xml` response when the redirect target succeeds.
+
+## Caching & Rate Limits
+
+The API applies `Cache-Control` and an in-memory service-wide IP rate limit so badge renderers (GitHub and similar markdown clients) can cache safely while still limiting abuse:
+
+- `GET /visits/*`: `Cache-Control: no-store`
+- Badge redirect endpoints (`/years`, `/repos`, `/gists`, `/updated`, `/created`): `public, max-age=0, s-maxage=300, stale-while-revalidate=600`
+- `GET /commits/*`: `public, max-age=0, s-maxage=120, stale-while-revalidate=300`
+- SVG endpoints (`/contributors`, `/last-stars`): `public, max-age=0, s-maxage=300, stale-while-revalidate=600`
+- Docs/OpenAPI (`/docs`, `/openapi.json`): `public, max-age=300, s-maxage=300`
+
+All hits to the service count toward the same limiter window per source IP. When request limits are exceeded, the API returns `429 Too Many Requests` with `Retry-After` and `RateLimit-*` headers.
 
 ## Available badges 🔥
 
